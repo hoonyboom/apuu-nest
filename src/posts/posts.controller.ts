@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AccessTokenGuard } from 'src/auth/guard/bearer-token.guard';
@@ -20,7 +21,15 @@ import { PostsService } from './posts.service';
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
-  paganatePosts(dto: PaginatePostDTO) {}
+  // @Get()
+  // getAllPosts() {
+  //   return this.postsService.getAllPosts();
+  // }
+
+  @Get()
+  async paginatePosts(@Query() dto: PaginatePostDTO) {
+    return await this.postsService.cursorPaginatePosts(dto);
+  }
 
   @Get(':id')
   getPostById(@Param('id', ParseIntPipe) postId: number) {
