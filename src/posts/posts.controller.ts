@@ -13,7 +13,7 @@ import {
 import { AccessTokenGuard } from 'src/auth/guard/bearer-token.guard';
 import { User } from 'src/users/decorator/user.decorator';
 import { CreatePostDTO } from './dto/create-post.dto';
-import { PaginatePostDTO } from './dto/paginate-post.dto';
+import { PostPaginateDTO } from './dto/paginate-post.dto';
 import { UpdatePostDTO } from './dto/updatePost.dto';
 import { PostsService } from './posts.service';
 
@@ -27,8 +27,8 @@ export class PostsController {
   // }
 
   @Get()
-  async paginatePosts(@Query() dto: PaginatePostDTO) {
-    return await this.postsService.cursorPaginatePosts(dto);
+  async paginatePosts(@Query() dto: PostPaginateDTO) {
+    return await this.postsService.paginatePosts(dto);
   }
 
   @Get(':id')

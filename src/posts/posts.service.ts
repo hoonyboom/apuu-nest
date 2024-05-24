@@ -1,10 +1,9 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ENV } from 'common/const/env.const';
-import { FindOptionsWhere, LessThan, MoreThan, Repository } from 'typeorm';
+import { CommonService } from 'src/common/common.service';
+import { Repository } from 'typeorm';
 import { CreatePostDTO } from './dto/create-post.dto';
-import { PaginatePostDTO } from './dto/paginate-post.dto';
+import { PostPaginateDTO } from './dto/paginate-post.dto';
 import { UpdatePostDTO } from './dto/updatePost.dto';
 import { PostsModel } from './entities/posts.entity';
 
@@ -13,97 +12,19 @@ export class PostsService {
   constructor(
     @InjectRepository(PostsModel)
     private readonly postsRepository: Repository<PostsModel>,
-    private readonly configService: ConfigService,
+    private readonly commonService: CommonService,
   ) {}
 
   async getAllPosts() {
     return await this.postsRepository.find();
   }
 
-  get getAddress() {
-    const protocol = this.configService.get<string>(ENV.PROTOCOL_KEYS);
-    const host = this.configService.get<string>(ENV.HOST_KEYS);
-
-    return {
-      protocol,
-      host,
-    };
-  }
-
-  async paginatePosts(dto: PaginatePostDTO) {
-    if (dto.page) {
-      return await this.pagePaginatePosts(dto);
-    } else {
-      return await this.cursorPaginatePosts(dto);
-    }
-  }
-
-  async pagePaginatePosts(dto: PaginatePostDTO) {
-    const [posts, count] = await this.postsRepository.findAndCount({
-      take: dto.take,
-      skip: dto.take * dto.page,
-      order: {
-        createdAt: dto.order__createdAt,
-      },
+  async paginatePosts(dto: PostPaginateDTO) {
+    return await this.commonService.paginate({
+      dto,
+      repo: this.postsRepository,
+      path: 'posts',
     });
-
-    return {
-      data: posts,
-      total: count,
-    };
-  }
-
-  async cursorPaginatePosts(dto: PaginatePostDTO) {
-    const where: FindOptionsWhere<PostsModel> = {};
-
-    if (dto.where__id_more_than) {
-      where.id = MoreThan(dto.where__id_more_than);
-    } else if (dto.where__id_less_than) {
-      where.id = LessThan(dto.where__id_less_than);
-    }
-
-    const posts = await this.postsRepository.find({
-      where,
-      take: dto.take,
-      order: {
-        createdAt: dto.order__createdAt,
-      },
-    });
-
-    const { protocol, host } = this.getAddress;
-    const lastItem =
-      posts.length === dto.take && posts.length > 0 ? posts.at(-1).id : null;
-    const nextUrl = new URL(`${protocol}://${host}/posts`);
-
-    {
-      for (const [key, value] of Object.entries(dto)) {
-        if (
-          value &&
-          key !== 'where__id_more_than' &&
-          key !== 'where__id_less_than'
-        ) {
-          nextUrl.searchParams.append(key, value);
-        }
-      }
-
-      let key;
-      if (dto.order__createdAt === 'ASC') {
-        key = 'where__id_more_than';
-      } else if (dto.order__createdAt === 'DESC') {
-        key = 'where__id_less_than';
-      }
-
-      nextUrl.searchParams.append(key, lastItem?.toString());
-    }
-
-    return {
-      data: posts,
-      cursor: {
-        after: lastItem,
-      },
-      count: posts.length,
-      next: lastItem ? nextUrl?.toString() : null,
-    };
   }
 
   async getPostById(id: number) {
