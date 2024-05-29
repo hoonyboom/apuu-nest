@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CommonService } from './common.service';
+import { Express } from 'express';
 
 @Controller('common')
 export class CommonController {
