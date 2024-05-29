@@ -7,11 +7,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { IsPublic } from './decorator/is-public.decorator';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { BasicTokenGuard } from './guard/basic-token.guard';
 import { RefreshTokenGuard } from './guard/bearer-token.guard';
 
 @Controller('auth')
+@IsPublic()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

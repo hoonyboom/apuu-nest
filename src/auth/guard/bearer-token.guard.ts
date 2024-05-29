@@ -4,8 +4,9 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
-import { UsersModel } from 'src/users/entities/users.entity';
+import { UsersModel } from 'src/users/entity/users.entity';
 import { UsersService } from 'src/users/users.service';
 import { AuthService, jwtPayload } from '../auth.service';
 
@@ -14,28 +15,39 @@ export class BearerTokenGuard implements CanActivate {
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
+    private readonly reflector: Reflector,
   ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
+    const isPublic = this.reflector.getAllAndOverride('isPublic', [
+      ctx.getHandler(),
+      ctx.getClass(),
+    ]);
+
     const req = ctx.switchToHttp().getRequest() satisfies Request & {
       user: UsersModel;
       token: string;
       tokenType: jwtPayload['type'];
+      isRoutePublic?: boolean;
     };
-    const rawToken = req.headers['authorization'];
 
+    if (isPublic) {
+      req.isRoutePublic = true;
+      return true;
+    }
+
+    const rawToken = req.headers['authorization'];
     if (!rawToken) {
       throw new UnauthorizedException('토큰이 없습니다!');
     }
 
     const token = this.authService.extractTokenFromHeader(rawToken);
-    const verifyToken = await this.authService.verifyToken(token);
-
-    const user = await this.usersService.getUserByEmail(verifyToken.email);
+    const payload = await this.authService.verifyToken(token);
+    const user = await this.usersService.getUserByEmail(payload.email);
 
     req.user = user;
     req.token = token;
-    req.tokenType = verifyToken.type;
+    req.tokenType = payload.type;
 
     return true;
   }
@@ -50,7 +62,12 @@ export class AccessTokenGuard extends BearerTokenGuard {
       user: UsersModel;
       token: string;
       tokenType: jwtPayload['type'];
+      isRoutePublic?: boolean;
     };
+
+    if (req.isRoutePublic) {
+      return true;
+    }
 
     if (req.tokenType !== 'access') {
       throw new UnauthorizedException('accessToken이 아닙니다.');

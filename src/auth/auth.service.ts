@@ -2,8 +2,8 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bycrypt from 'bcrypt';
-import { ENV } from 'common/const/env.const';
-import { UsersModel } from 'src/users/entities/users.entity';
+import { ENV } from 'src/common/const/env.const';
+import { UsersModel } from 'src/users/entity/users.entity';
 import { UsersService } from 'src/users/users.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 
@@ -115,9 +115,13 @@ export class AuthService {
   }
 
   async verifyToken(token: string): Promise<jwtPayload> {
-    return await this.jwtService.verify(token, {
-      secret: this.configService.get<string>(ENV.JWT_SECRET_KEYS),
-    });
+    try {
+      return await this.jwtService.verify(token, {
+        secret: this.configService.get<string>(ENV.JWT_SECRET_KEYS),
+      });
+    } catch (err) {
+      throw new UnauthorizedException('토큰이 올바르지 않습니다');
+    }
   }
 
   async rotateToken(token: string, requestTokenType: 'access' | 'refresh') {
