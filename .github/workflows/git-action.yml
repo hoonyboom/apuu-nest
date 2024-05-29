@@ -19,6 +19,6 @@ jobs:
       - name: Build the Docker image
         run: docker build -t apuu-nest .
       - name: taging
-        run: docker tag apuu-nest:latest hoonyboom/apuu-nest:latest
+        run: docker tag apuu-nest:latest $DOCKER_USERNAME/apuu-nest:latest
       - name: Push to Dockerhub
-        run: docker push hoonyboom/apuu-nest:latest
+        run: docker push $DOCKER_USERNAME/apuu-nest:latest
