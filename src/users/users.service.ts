@@ -4,19 +4,42 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { UsersModel } from './entities/users.entity';
+import { CommonService } from 'src/common/common.service';
+import { BasePaginateDTO } from 'src/common/dto/base-pagination.dto';
+import { QueryRunner, Repository } from 'typeorm';
+import { UsersFollowersModel } from './entity/user-followers.entity';
+import { UsersModel } from './entity/users.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UsersModel)
     private readonly usersRepository: Repository<UsersModel>,
+    @InjectRepository(UsersFollowersModel)
+    private readonly usersFollowersRepository: Repository<UsersFollowersModel>,
+    private readonly commonService: CommonService,
   ) {}
+
+  getUsersRepository(qr?: QueryRunner) {
+    return qr ? qr.manager.getRepository(UsersModel) : this.usersRepository;
+  }
+  getUsersFollowersRepository(qr?: QueryRunner) {
+    return qr
+      ? qr.manager.getRepository(UsersFollowersModel)
+      : this.usersFollowersRepository;
+  }
 
   async getUser(id: number) {
     const user = await this.usersRepository.findOneByOrFail({ id });
     return user;
+  }
+
+  async paginateUsers(dto: BasePaginateDTO) {
+    return await this.commonService.paginate({
+      dto,
+      repo: this.usersRepository,
+      path: 'users',
+    });
   }
 
   async createUser(body: Pick<UsersModel, 'email' | 'password' | 'nickname'>) {
@@ -43,23 +66,110 @@ export class UsersService {
   }
 
   async deleteUser(authorId: number) {
-    const user = await this.usersRepository.findOneByOrFail({
-      id: authorId,
-    });
-
     try {
       await this.usersRepository.delete(authorId);
       return { success: true };
     } catch (err) {
-      throw new ForbiddenException();
+      throw new ForbiddenException('계정을 삭제하지 못했습니다');
     }
   }
 
   async getUserByEmail(email: string) {
     try {
-      return await this.usersRepository.findOneByOrFail({ email });
+      return await this.usersRepository.findOneBy({ email });
     } catch (err) {
       throw new BadRequestException('존재하지 않는 이메일입니다');
+    }
+  }
+
+  async getFollowers(userId: number, includeOnlyConfirmed: boolean) {
+    const where = {
+      followee: { id: userId },
+    };
+
+    if (includeOnlyConfirmed) {
+      where['isConfirmed'] = true;
+    }
+
+    const result = await this.usersFollowersRepository.find({
+      where,
+      relations: ['follower', 'followee'],
+    });
+
+    return result.map((item) => ({
+      id: item.follower.id,
+      nickname: item.follower.nickname,
+      email: item.follower.email,
+      isConfirmed: item.isConfirmed,
+    }));
+  }
+
+  async followUser(userId: number, followeeId: number, qr?: QueryRunner) {
+    const repo = this.getUsersFollowersRepository(qr);
+
+    await repo.save({
+      follower: { id: userId },
+      followee: { id: followeeId },
+    });
+
+    return { success: true };
+  }
+
+  async confirmFollow(userId: number, followerId: number, qr?: QueryRunner) {
+    const repo = this.getUsersFollowersRepository(qr);
+    const result = await repo.findOne({
+      where: {
+        follower: { id: followerId },
+        followee: { id: userId },
+      },
+      relations: ['follower', 'followee'],
+    });
+
+    if (!result) {
+      throw new BadRequestException('팔로우 요청이 존재하지 않습니다');
+    }
+
+    await repo.save({
+      ...result,
+      isConfirmed: true,
+    });
+
+    return { success: true };
+  }
+
+  async unFollowUser(userId: number, followeeId: number, qr?: QueryRunner) {
+    const repo = this.getUsersFollowersRepository(qr);
+    await repo.delete({
+      follower: { id: userId },
+      followee: { id: followeeId },
+    });
+
+    return { success: true };
+  }
+
+  async updateFollowCount(
+    type: 'whenFollowAccepted' | 'whenUnFollowing',
+    userId: number,
+    theOtherUserId: number,
+    qr?: QueryRunner,
+  ) {
+    const repo = this.getUsersRepository(qr);
+
+    switch (type) {
+      case 'whenFollowAccepted':
+        const followerId = theOtherUserId;
+        await repo.increment({ id: userId }, 'followerCount', 1);
+        await repo.decrement({ id: followerId }, 'followeeCount', 1);
+        break;
+
+      case 'whenUnFollowing':
+        const followeeId = theOtherUserId;
+        await repo.decrement({ id: userId }, 'followeeCount', 1);
+        await repo.decrement({ id: followeeId }, 'followerCount', 1);
+        break;
+
+      default:
+        break;
     }
   }
 }

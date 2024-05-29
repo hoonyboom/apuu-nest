@@ -1,17 +1,48 @@
 import { Exclude } from 'class-transformer';
 import { IsEmail, IsString, Length } from 'class-validator';
+import { ChatsModel } from 'src/chats/entity/chats.entity';
+import { MessagesModel } from 'src/chats/messages/entities/messages.entity';
 import { BaseModel } from 'src/common/entities/base.entity';
 import { EmailValidationMessage } from 'src/common/vaildation-message/email-validation.message';
 import { LengthValidationMessage } from 'src/common/vaildation-message/length-validation.message';
 import { StringValidationMessage } from 'src/common/vaildation-message/string-validation.message';
-import { PostsModel } from 'src/posts/entities/posts.entity';
-import { Column, Entity, OneToMany } from 'typeorm';
+import { CommentsModel } from 'src/posts/comments/entity/comment.entity';
+import { PostsModel } from 'src/posts/entity/posts.entity';
+import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
 import { Roles } from '../const/roles.const';
+import { UsersFollowersModel } from './user-followers.entity';
 
 @Entity()
 export class UsersModel extends BaseModel {
   @OneToMany(() => PostsModel, (post) => post.author)
   posts: PostsModel[];
+
+  @ManyToMany(() => ChatsModel, (chat) => chat.users)
+  @JoinTable()
+  chats: ChatsModel[];
+
+  @OneToMany(() => MessagesModel, (message) => message.author)
+  messages: MessagesModel[];
+
+  @OneToMany(() => CommentsModel, (comment) => comment.author)
+  comments: CommentsModel[];
+
+  @OneToMany(() => UsersFollowersModel, (ufm) => ufm.follower)
+  @JoinTable()
+  followers: UsersFollowersModel[];
+
+  @OneToMany(() => UsersFollowersModel, (ufm) => ufm.followee)
+  followees: UsersFollowersModel[];
+
+  @Column({
+    default: 0,
+  })
+  followerCount: number;
+
+  @Column({
+    default: 0,
+  })
+  followeeCount: number;
 
   @Column({
     unique: true,

@@ -4,7 +4,7 @@ import {
   createParamDecorator,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { UsersModel } from '../entities/users.entity';
+import { UsersModel } from '../entity/users.entity';
 
 export const User = createParamDecorator(
   (selector: keyof UsersModel | undefined, ctx: ExecutionContext) => {
