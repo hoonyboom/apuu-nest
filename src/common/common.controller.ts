@@ -5,12 +5,14 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CommonService } from './common.service';
 import { Express } from 'express';
+
+// TODO: Express 타입이 자꾸 사라지는 버그가 있어 임시 선언
+let a: Express;
 
 @Controller('common')
 export class CommonController {
-  constructor(private readonly commonService: CommonService) {}
+  constructor() {}
 
   @Post('image')
   @UseInterceptors(FileInterceptor('image'))
