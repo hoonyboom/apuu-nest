@@ -8,7 +8,7 @@ import { AuthService } from './auth.service';
 @Module({
   imports: [
     JwtModule.register({
-      secret: process.env[ENV.JWT_SECRET_KEYS],
+      secret: process.env[ENV.JWT_SECRET_KEY],
     }),
     UsersModule,
   ],

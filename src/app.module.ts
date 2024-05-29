@@ -36,11 +36,11 @@ import { UsersModule } from './users/users.module';
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env[ENV.DB_HOST_KEYS],
-      port: parseInt(process.env[ENV.DB_PORT_KEYS]),
-      username: process.env[ENV.DB_USER_KEYS],
-      password: process.env[ENV.DB_PASS_KEYS],
-      database: process.env[ENV.DB_NAME_KEYS],
+      host: process.env[ENV.DB_HOST_KEY],
+      port: parseInt(process.env[ENV.DB_PORT_KEY]),
+      username: process.env[ENV.DB_USER_KEY],
+      password: process.env[ENV.DB_PASS_KEY],
+      database: process.env[ENV.DB_NAME_KEY],
       ssl: { ca: process.env[ENV.CA_CERT_KEYS], rejectUnauthorized: true },
       synchronize: true, // TODO: 프로덕션 환경에서는 false로 설정
 

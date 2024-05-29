@@ -34,7 +34,7 @@ export class AuthService {
     } satisfies jwtPayload;
 
     return this.jwtService.sign(payload, {
-      secret: this.configService.get<string>(ENV.JWT_SECRET_KEYS),
+      secret: this.configService.get<string>(ENV.JWT_SECRET_KEY),
       expiresIn: requestTokenType === 'refresh' ? '1h' : '5m',
     });
   }
@@ -75,7 +75,7 @@ export class AuthService {
   async registerWithEmail({ email, password, nickname }: RegisterUserDto) {
     const hash = await bycrypt.hash(
       password,
-      parseInt(this.configService.get<string>(ENV.SALT_ROUNDS_KEYS)),
+      parseInt(this.configService.get<string>(ENV.SALT_ROUNDS_KEY)),
     );
 
     const { data: newUser } = await this.usersService.createUser({
@@ -117,7 +117,7 @@ export class AuthService {
   async verifyToken(token: string): Promise<jwtPayload> {
     try {
       return await this.jwtService.verify(token, {
-        secret: this.configService.get<string>(ENV.JWT_SECRET_KEYS),
+        secret: this.configService.get<string>(ENV.JWT_SECRET_KEY),
       });
     } catch (err) {
       throw new UnauthorizedException('토큰이 올바르지 않습니다');

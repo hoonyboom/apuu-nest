@@ -26,8 +26,8 @@ export class CommonService {
   constructor(private readonly configService: ConfigService) {}
 
   get getAddress() {
-    const protocol = this.configService.get<string>(ENV.PROTOCOL_KEYS);
-    const host = this.configService.get<string>(ENV.HOST_KEYS);
+    const protocol = this.configService.get<string>(ENV.PROTOCOL_KEY);
+    const host = this.configService.get<string>(ENV.HOST_KEY);
 
     return {
       protocol,
