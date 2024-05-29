@@ -1,3 +1,11 @@
+# build stage
+FROM node:18-alpine AS build
+WORKDIR /usr/src/app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
 # prod stage
 FROM node:18-alpine
 WORKDIR /usr/src/app
