@@ -1,4 +1,11 @@
 import { PickType } from '@nestjs/mapped-types';
-import { PostsModel } from '../entities/posts.entity';
+import { IsOptional, IsString } from 'class-validator';
+import { PostsModel } from '../entity/posts.entity';
 
-export class CreatePostDTO extends PickType(PostsModel, ['title', 'content']) {}
+export class CreatePostDTO extends PickType(PostsModel, ['title', 'content']) {
+  @IsString({
+    each: true,
+  })
+  @IsOptional()
+  images?: string[] = [];
+}
