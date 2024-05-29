@@ -42,7 +42,9 @@ import { UsersModule } from './users/users.module';
       password: process.env[ENV.DB_PASS_KEY],
       database: process.env[ENV.DB_NAME_KEY],
       ssl: { ca: process.env[ENV.CA_CERT_KEY], rejectUnauthorized: true },
-      synchronize: false, // TODO: 프로덕션 환경에서는 false로 설정
+      // TODO: 프로덕션 환경에서는 false로 설정
+      synchronize:
+        process.env[ENV.NODE_ENV_KEY] === 'development' ? true : false,
 
       // TODO: 신규 엔티티 잊지 말고 등록
       entities: [
