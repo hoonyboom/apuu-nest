@@ -47,6 +47,7 @@ import { UsersModule } from './users/users.module';
         process.env[ENV.NODE_ENV_KEY] === 'development' ? true : false,
 
       // TODO: 신규 엔티티 잊지 말고 등록
+      autoLoadEntities: true,
       entities: [
         BaseModel,
         PostsModel,

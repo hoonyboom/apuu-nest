@@ -28,10 +28,12 @@ export class CommonService {
   get getAddress() {
     const protocol = this.configService.get<string>(ENV.PROTOCOL_KEY);
     const host = this.configService.get<string>(ENV.HOST_KEY);
+    const port = this.configService.get<string>(ENV.SERVER_PORT_KEY);
 
     return {
       protocol,
       host,
+      port,
     };
   }
 
@@ -77,12 +79,12 @@ export class CommonService {
       ...overrideFindOptions,
     });
 
-    const { protocol, host } = this.getAddress;
+    const { protocol, host, port } = this.getAddress;
     const lastItem =
       results.length === dto.take && results.length > 0
         ? results.at(-1).id
         : null;
-    const nextUrl = new URL(`${protocol}://${host}/${path}`);
+    const nextUrl = new URL(`${protocol}://${host}:${port}/${path}`);
 
     {
       for (const [key, value] of Object.entries(dto)) {
