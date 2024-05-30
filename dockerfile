@@ -23,5 +23,6 @@ ENV NODE_ENV \
   SALT_ROUNDS \
   CA_CERT
 COPY --from=build /usr/src/app/dist ./dist
+COPY --from=build /usr/src/app/node_modules ./node_modules
 EXPOSE ${PORT}
 CMD ["node", "dist/main.js"]
