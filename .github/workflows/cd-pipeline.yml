@@ -27,7 +27,6 @@ jobs:
           NODE_ENV: ${{ secrets.NODE_ENV }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           SALT_ROUNDS: ${{ secrets.SALT_ROUNDS }}
-          # CA_CERT: ${{ secrets.CA_CERT }}
         run: sudo docker run -d \
           -p $PORT:$PORT \
           -e PORT=$PORT \
@@ -41,5 +40,4 @@ jobs:
           -e NODE_ENV=$NODE_ENV \
           -e JWT_SECRET=$JWT_SECRET \
           -e SALT_ROUNDS=$SALT_ROUNDS \
-          # -e CA_CERT="$CA_CERT" \
           --name apuu-nest-container hyezoprk/apuu-nest sleep infinity
