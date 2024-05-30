@@ -11,7 +11,7 @@ async function bootstrap() {
 
   // app.useGlobalFilters(new HttpExceptionFilter());
 
-  await app.listen(process.env[ENV.PORT_KEY]);
+  await app.listen(process.env[ENV.PORT_KEY], process.env[ENV.HOST_KEY]);
 }
 
 bootstrap();
