@@ -28,7 +28,7 @@ export class CommonService {
   get getAddress() {
     const protocol = this.configService.get<string>(ENV.PROTOCOL_KEY);
     const host = this.configService.get<string>(ENV.HOST_KEY);
-    const port = this.configService.get<string>(ENV.SERVER_PORT_KEY);
+    const port = this.configService.get<string>(ENV.PORT_KEY);
 
     return {
       protocol,

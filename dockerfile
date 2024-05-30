@@ -9,9 +9,20 @@ RUN npm run build
 # prod stage
 FROM node:20-alpine
 WORKDIR /usr/src/app
-ARG NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
+ARG NODE_ENV \
+  DB_HOST \
+  DB_PORT \
+  DB_USER \
+  DB_PASS \
+  DB_NAME \
+  PROTOCOL \
+  HOST \
+  PORT \
+  JWT_SECRET \
+  SALT_ROUNDS \
+  CA_CERT
+ENV PORT=${PORT}
 COPY --from=build /usr/src/app/dist ./dist
-COPY package*.json ./
-EXPOSE 8080
+COPY packagse*.json ./
+EXPOSE ${PORT}
 CMD ["node", "dist/main.js"]
