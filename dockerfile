@@ -21,7 +21,8 @@ ARG NODE_ENV \
   JWT_SECRET \
   SALT_ROUNDS \
   CA_CERT
-ENV PORT=${PORT}
+ENV PORT=${PORT} \
+  NODE_ENV=${NODE_ENV}
 COPY --from=build /usr/src/app/dist ./dist
 COPY packagse*.json ./
 RUN npm install --only=production
