@@ -27,17 +27,5 @@ jobs:
           NODE_ENV: ${{ secrets.NODE_ENV }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           SALT_ROUNDS: ${{ secrets.SALT_ROUNDS }}
-        run: sudo docker run -d \
-          -p $PORT:$PORT \
-          -e PORT=$PORT \
-          -e DB_HOST=$DB_HOST \
-          -e DB_PORT=$DB_PORT \
-          -e DB_USER=$DB_USER \
-          -e DB_PASS=$DB_PASS \
-          -e DB_NAME=$DB_NAME \
-          -e PROTOCOL=$PROTOCOL \
-          -e HOST=$HOST \
-          -e NODE_ENV=$NODE_ENV \
-          -e JWT_SECRET=$JWT_SECRET \
-          -e SALT_ROUNDS=$SALT_ROUNDS \
-          --name apuu-nest-container hyezoprk/apuu-nest sleep infinity
+          CA_CERT: ${{ secrets.CA_CERT }}
+        run: sudo docker run -d -p $PORT:$PORT -e PORT=$PORT -e DB_HOST=$DB_HOST -e DB_PORT=$DB_PORT -e DB_USER=$DB_USER -e DB_PASS=$DB_PASS -e DB_NAME=$DB_NAME -e PROTOCOL=$PROTOCOL -e HOST=$HOST -e NODE_ENV=$NODE_ENV -e JWT_SECRET=$JWT_SECRET -e SALT_ROUNDS=$SALT_ROUNDS -e CA_CERT="$CA_CERT" --name apuu-nest-container hyezoprk/apuu-nest sleep infinity
