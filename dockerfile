@@ -1,5 +1,5 @@
 # build stage
-FROM node:20-alpine AS build
+FROM node:21-alpine AS build
 WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm install
@@ -7,7 +7,7 @@ COPY . .
 RUN npm run build
 
 # prod stage
-FROM node:20-alpine
+FROM node:21-alpine
 WORKDIR /usr/src/app
 ARG NODE_ENV \
   DB_HOST \
@@ -24,5 +24,7 @@ ARG NODE_ENV \
 ENV PORT=${PORT}
 COPY --from=build /usr/src/app/dist ./dist
 COPY packagse*.json ./
+RUN npm install --only=production
+RUN rm package*.json
 EXPOSE ${PORT}
 CMD ["node", "dist/main.js"]
