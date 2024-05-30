@@ -16,5 +16,30 @@ jobs:
         run: sudo docker rm -f apuu-nest-container || true
       - name: Run Docker Container
         env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          PROTOCOL: ${{ secrets.PROTOCOL }}
+          HOST: ${{ secrets.HOST }}
           PORT: ${{ secrets.PORT }}
-        run: sudo docker run -d -p $PORT:$PORT --name apuu-nest-container hyezoprk/apuu-nest
+          NODE_ENV: ${{ secrets.NODE_ENV }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          SALTING_ROUNDS: ${{ secrets.SALTING_ROUNDS }}
+          CA_CERT: ${{ secrets.CA_CERT }}
+        run: sudo docker run -d \
+          -p $PORT:$PORT \
+          -e PORT=$PORT \
+          -e DB_HOST=$DB_HOST \
+          -e DB_PORT=$DB_PORT \
+          -e DB_USER=$DB_USER \
+          -e DB_PASS=$DB_PASS \
+          -e DB_NAME=$DB_NAME \
+          -e PROTOCOL=$PROTOCOL \
+          -e HOST=$HOST \
+          -e NODE_ENV=$NODE_ENV \
+          -e JWT_SECRET=$JWT_SECRET \
+          -e SALTING_ROUNDS=$SALTING_ROUNDS \
+          -e CA_CERT="$CA_CERT" \
+          --name apuu-nest-container hyezoprk/apuu-nest sleep infinity

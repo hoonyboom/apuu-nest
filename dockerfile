@@ -9,7 +9,8 @@ RUN npm run build
 # prod stage
 FROM node:21-alpine
 WORKDIR /usr/src/app
-ARG NODE_ENV \
+ARG PORT
+ENV NODE_ENV \
   DB_HOST \
   DB_PORT \
   DB_USER \
@@ -21,7 +22,6 @@ ARG NODE_ENV \
   JWT_SECRET \
   SALT_ROUNDS \
   CA_CERT
-ENV PORT=${PORT}
 COPY --from=build /usr/src/app/dist ./dist
 EXPOSE ${PORT}
 CMD ["node", "dist/main.js"]
