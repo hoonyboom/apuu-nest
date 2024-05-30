@@ -24,7 +24,7 @@ ARG NODE_ENV \
 ENV PORT=${PORT} \
   NODE_ENV=${NODE_ENV}
 COPY --from=build /usr/src/app/dist ./dist
-COPY packagse*.json ./
+COPY package*.json ./
 RUN npm install --only=production
 RUN rm package*.json
 EXPOSE ${PORT}
