@@ -43,7 +43,7 @@ jobs:
             --build-arg NODE_ENV=$NODE_ENV \
             --build-arg JWT_SECRET=$JWT_SECRET \
             --build-arg SALTING_ROUNDS=$SALTING_ROUNDS \
-            --build-arg CA_CERT=$CA_CERT \
+            --build-arg CA_CERT="$CA_CERT" \
             -t apuu-nest .
 
       - name: taging
