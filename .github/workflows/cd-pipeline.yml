@@ -40,6 +40,6 @@ jobs:
           -e HOST=$HOST \
           -e NODE_ENV=$NODE_ENV \
           -e JWT_SECRET=$JWT_SECRET \
-          -e SALTING_ROUNDS=$SALTING_ROUNDS \
+          -e SALT_ROUNDS=$SALT_ROUNDS \
           -e CA_CERT="$CA_CERT" \
-          --name apuu-nest-container hyezoprk/apuu-nest sleep infinity
+          --name apuu-nest-container hyezoprk/apuu-nest
