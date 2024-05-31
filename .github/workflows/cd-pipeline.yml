@@ -44,4 +44,5 @@ jobs:
           -e SALT_ROUNDS=$SALT_ROUNDS
           -e CA_CERT="$CA_CERT"
           --name apuu-nest-container hyezoprk/apuu-nest
+          --network server
           sleep infinity
