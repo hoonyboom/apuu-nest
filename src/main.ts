@@ -11,6 +11,14 @@ async function bootstrap() {
 
   // app.useGlobalFilters(new HttpExceptionFilter());
 
+  // app.use(
+  //   cors({
+  //     origin: 'http://your-nextjs-domain',
+  //     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  //     credentials: true,
+  //   }),
+  // );
+
   await app.listen(process.env[ENV.PORT_KEY], process.env[ENV.HOST_KEY]);
 }
 
