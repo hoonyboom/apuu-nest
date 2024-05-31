@@ -6,7 +6,6 @@ import { VALIDATION_CONFIG } from './common/const/validation-config.const';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe(VALIDATION_CONFIG));
   // app.useGlobalFilters(new HttpExceptionFilter());
 
