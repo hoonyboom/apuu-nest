@@ -14,6 +14,8 @@ jobs:
         run: sudo docker pull hyezoprk/apuu-nest:latest
       - name: Delete Old docker container
         run: sudo docker rm -f apuu-nest-container || true
+      - name: Creaate Network
+        run: sudo docker network create server
       - name: Run Docker Container
         env:
           DB_HOST: ${{ secrets.DB_HOST }}
