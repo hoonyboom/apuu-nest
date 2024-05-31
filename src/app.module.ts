@@ -41,9 +41,6 @@ import { UsersModule } from './users/users.module';
       username: process.env[ENV.DB_USER_KEY],
       password: process.env[ENV.DB_PASS_KEY],
       database: process.env[ENV.DB_NAME_KEY],
-      // ssl: false,
-      ssl: { ca: process.env[ENV.CA_CERT_KEY], rejectUnauthorized: true },
-      // TODO: 프로덕션 환경에서는 false로 설정
       synchronize:
         process.env[ENV.NODE_ENV_KEY] === 'development' ? true : false,
 
