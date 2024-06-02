@@ -2,7 +2,7 @@
 FROM node:21-alpine AS build
 WORKDIR /usr/src/app
 COPY package*.json ./
-RUN npm install
+RUN npm install --production
 COPY . .
 RUN npm run build
 
@@ -23,7 +23,7 @@ ENV NODE_ENV \
   SALT_ROUNDS \
   CA_CERT
 COPY --from=build /usr/src/app/dist ./dist
+COPY --from=build /usr/src/app/node_modules ./node_modules
 COPY package*.json ./
-RUN npm install --production
 EXPOSE ${PORT}
 ENTRYPOINT ["npm", "run", "start:prod"]
