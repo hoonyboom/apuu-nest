@@ -11,6 +11,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { IsPublic } from 'src/auth/decorator/is-public.decorator';
 import { QR } from 'src/common/decorator/query-runner.decorator';
 import { QueryRunnerInterceotor } from 'src/common/interceptor/query-runner.interceptor';
@@ -24,6 +25,7 @@ import { CreateCommentDTO } from './dto/create-comment.dto';
 import { UpdateCommentDTO } from './dto/update-comment.dto';
 import { IsCommentMineOrAdminGuard } from './guard/is-comment-mine-or-admin.guard';
 
+@ApiTags('Comments')
 @Controller('posts/:pid/comments')
 export class CommentsController {
   constructor(

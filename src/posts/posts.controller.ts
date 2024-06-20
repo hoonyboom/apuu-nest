@@ -11,6 +11,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { IsPublic } from 'src/auth/decorator/is-public.decorator';
 import { QR } from 'src/common/decorator/query-runner.decorator';
 import { ImageModelType } from 'src/common/entities/image.entity';
@@ -24,6 +25,7 @@ import { IsPostMineOrAdminGuard } from './guard/is-post-mine-or-admin.guard';
 import { PostsImagesService } from './images/images.service';
 import { PostsService } from './posts.service';
 
+@ApiTags('Posts')
 @Controller('posts')
 export class PostsController {
   constructor(

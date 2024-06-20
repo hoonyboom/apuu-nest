@@ -1,4 +1,4 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { PartialType } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
 import { StringValidationMessage } from 'src/common/vaildation-message/string-validation.message';
 import { CreatePostDTO } from './create-post.dto';

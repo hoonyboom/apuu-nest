@@ -4,6 +4,8 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Request } from 'express';
+import { UsersModel } from 'src/users/entity/users.entity';
 import { AuthService } from '../auth.service';
 
 @Injectable()
@@ -11,7 +13,10 @@ export class BasicTokenGuard implements CanActivate {
   constructor(private readonly authService: AuthService) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
-    const req = ctx.switchToHttp().getRequest();
+    const req = ctx.switchToHttp().getRequest() satisfies Request & {
+      user: UsersModel;
+      tokens: { accessToken: string; refreshToken: string };
+    };
     const rawToken = req.headers['authorization'];
 
     if (!rawToken) {
