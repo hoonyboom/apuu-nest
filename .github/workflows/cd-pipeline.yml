@@ -42,7 +42,10 @@ jobs:
           -e NODE_ENV=$NODE_ENV
           -e JWT_SECRET=$JWT_SECRET
           -e SALT_ROUNDS=$SALT_ROUNDS
-          -e CA_CERT="$CA_CERT"
+          -e EMAIL_USER="$EMAIL_USER"
+          -e EMAIL_PASS="$EMAIL_PASS"
+          -e REDIS_HOST="$REDIS_HOST"
+          -e REDIS_PORT="$REDIS_PORT"
           --name apuu-nest-container hyezoprk/apuu-nest
           --network server
           sleep infinity
