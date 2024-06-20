@@ -1,8 +1,10 @@
+import { CacheModule } from '@nestjs/cache-manager';
 import { ClassSerializerInterceptor, Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { redisStore } from 'cache-manager-redis-yet';
 import { ENV } from 'src/common/const/env.const';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -34,28 +36,48 @@ import { UsersModule } from './users/users.module';
       rootPath: PUBLIC_FOLDER_PATH,
       serveRoot: '/public',
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env[ENV.DB_HOST_KEY],
-      port: parseInt(process.env[ENV.DB_PORT_KEY]),
-      username: process.env[ENV.DB_USER_KEY],
-      password: process.env[ENV.DB_PASS_KEY],
-      database: process.env[ENV.DB_NAME_KEY],
-      synchronize:
-        process.env[ENV.NODE_ENV_KEY] === 'development' ? true : false,
+    CacheModule.registerAsync<RegistrationOptions>({
+      isGlobal: true,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        store: await redisStore({
+          ttl: 60 * 60,
+          socket: {
+            host: configService.get<string>(ENV.REDIS_HOST_KEY),
+            port: parseInt(configService.get<string>(ENV.REDIS_PORT_KEY)),
+          },
+        }),
+      }),
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get<string>(ENV.DB_HOST_KEY),
+        port: parseInt(configService.get<string>(ENV.DB_PORT_KEY)),
+        username: configService.get<string>(ENV.DB_USER_KEY),
+        password: configService.get<string>(ENV.DB_PASS_KEY),
+        database: configService.get<string>(ENV.DB_NAME_KEY),
+        synchronize:
+          configService.get<string>(ENV.NODE_ENV_KEY) === 'development'
+            ? true
+            : false,
 
-      // TODO: 신규 엔티티 잊지 말고 등록
-      autoLoadEntities: true,
-      entities: [
-        BaseModel,
-        PostsModel,
-        UsersModel,
-        ImagesModel,
-        ChatsModel,
-        MessagesModel,
-        CommentsModel,
-        UsersFollowersModel,
-      ],
+        // TODO: 신규 엔티티 잊지 말고 등록
+        autoLoadEntities: true,
+        entities: [
+          BaseModel,
+          PostsModel,
+          UsersModel,
+          ImagesModel,
+          ChatsModel,
+          MessagesModel,
+          CommentsModel,
+          UsersFollowersModel,
+        ],
+      }),
     }),
     CommonModule,
     PostsModule,

@@ -1,11 +1,20 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bycrypt from 'bcrypt';
+import { Cache } from 'cache-manager';
+import * as nodemailer from 'nodemailer';
+import Mail from 'nodemailer/lib/mailer';
 import { ENV } from 'src/common/const/env.const';
 import { UsersModel } from 'src/users/entity/users.entity';
 import { UsersService } from 'src/users/users.service';
-import { RegisterUserDto } from './dto/register-user.dto';
+import { RegisterUserDTO } from './dto/register-user.dto';
 
 export type jwtPayload = {
   sub: number;
@@ -14,14 +23,59 @@ export type jwtPayload = {
 };
 
 type TokenType = 'Bearer' | 'Basic';
+type EmailOptions = {
+  to: string;
+  subject: string;
+  html: string;
+};
 
 @Injectable()
 export class AuthService {
+  private transporter: Mail;
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
     private readonly configService: ConfigService,
-  ) {}
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
+  ) {
+    this.transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: this.configService.get<string>(ENV.EMAIL_USER_KEY),
+        pass: this.configService.get<string>(ENV.EMAIL_PASS_KEY),
+      },
+    });
+  }
+
+  async sendVeryficationCode(email: string) {
+    const verifyCode = Math.floor(Math.random() * 1000000);
+
+    const mailOptions: EmailOptions = {
+      to: email,
+      subject: '이메일 인증 코드',
+      html: `인증 코드: ${verifyCode}`,
+    };
+
+    await this.cacheManager.set(email, verifyCode);
+    return await this.transporter.sendMail(mailOptions);
+  }
+
+  async verifyEmailCode(email: string, verifyCode: number) {
+    const cachedCode = await this.cacheManager.get(email);
+
+    if (!cachedCode) {
+      throw new NotFoundException(
+        '해당 메일로 인증 코드가 전송되지 않았습니다.',
+      );
+    } else if (cachedCode !== verifyCode) {
+      throw new UnauthorizedException('인증 코드가 일치하지 않습니다');
+    } else {
+      await this.cacheManager.del(email);
+      return { success: true };
+    }
+  }
 
   signToken(
     { email, id }: Pick<UsersModel, 'email' | 'id'>,
@@ -72,7 +126,7 @@ export class AuthService {
     return this.loginUser(existingUser);
   }
 
-  async registerWithEmail({ email, password, nickname }: RegisterUserDto) {
+  async registerWithEmail({ email, password, nickname }: RegisterUserDTO) {
     const hash = await bycrypt.hash(
       password,
       parseInt(this.configService.get<string>(ENV.SALT_ROUNDS_KEY)),
