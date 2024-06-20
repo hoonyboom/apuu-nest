@@ -43,6 +43,7 @@ import { UsersModule } from './users/users.module';
       useFactory: async (configService: ConfigService) => ({
         store: await redisStore({
           ttl: 60 * 3,
+          //
           socket: {
             host: configService.get<string>(ENV.REDIS_HOST_KEY),
             port: parseInt(configService.get<string>(ENV.REDIS_PORT_KEY)),
