@@ -1,4 +1,4 @@
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { CACHE_MANAGER, CacheStore } from '@nestjs/cache-manager';
 import {
   Inject,
   Injectable,
@@ -8,7 +8,6 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bycrypt from 'bcrypt';
-import { Cache } from 'cache-manager';
 import * as nodemailer from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
 import { ENV } from 'src/common/const/env.const';
@@ -38,7 +37,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly configService: ConfigService,
     @Inject(CACHE_MANAGER)
-    private readonly cacheManager: Cache,
+    private readonly cacheManager: CacheStore,
   ) {
     this.transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -58,7 +57,7 @@ export class AuthService {
       html: `인증 코드: ${verifyCode}`,
     };
 
-    await this.cacheManager.set(email, verifyCode, 360);
+    await this.cacheManager.set(email, verifyCode, { ttl: 180 });
     return await this.transporter.sendMail(mailOptions);
   }
 
