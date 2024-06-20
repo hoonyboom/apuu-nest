@@ -58,12 +58,12 @@ export class AuthService {
       html: `인증 코드: ${verifyCode}`,
     };
 
-    await this.cacheManager.set(email, verifyCode);
+    await this.cacheManager.set(email, verifyCode, 360);
     return await this.transporter.sendMail(mailOptions);
   }
 
   async verifyEmailCode(email: string, verifyCode: number) {
-    const cachedCode = await this.cacheManager.get(email);
+    const cachedCode = await this.cacheManager.get<number>(email);
 
     if (!cachedCode) {
       throw new NotFoundException(
