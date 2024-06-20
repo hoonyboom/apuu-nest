@@ -1,5 +1,6 @@
 import { CACHE_MANAGER, CacheStore } from '@nestjs/cache-manager';
 import {
+  BadRequestException,
   Inject,
   Injectable,
   NotFoundException,
@@ -51,14 +52,20 @@ export class AuthService {
   async sendVeryficationCode(email: string) {
     const verifyCode = Math.floor(Math.random() * 1000000);
 
-    const mailOptions: EmailOptions = {
+    const mailOptions = {
       to: email,
       subject: '이메일 인증 코드',
       html: `인증 코드: ${verifyCode}`,
-    };
+    } satisfies EmailOptions;
 
-    await this.cacheManager.set(email, verifyCode, { ttl: 180 });
-    return await this.transporter.sendMail(mailOptions);
+    try {
+      await this.cacheManager.set(email, verifyCode, { ttl: 180 });
+      return await this.transporter.sendMail(mailOptions);
+    } catch (err) {
+      throw new BadRequestException(
+        '인증 코드를 Redis에 저장하는 데 실패했습니다',
+      );
+    }
   }
 
   async verifyEmailCode(email: string, verifyCode: number) {
