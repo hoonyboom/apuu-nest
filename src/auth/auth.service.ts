@@ -59,7 +59,7 @@ export class AuthService {
     } satisfies EmailOptions;
 
     try {
-      await this.cacheManager.set(email, verifyCode, 180);
+      await this.cacheManager.set(email, verifyCode, 180000);
       return await this.transporter.sendMail(mailOptions);
     } catch (err) {
       if (err instanceof Error) {
