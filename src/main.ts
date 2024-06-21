@@ -8,6 +8,11 @@ import { BasePaginateDTO } from './common/dto/base-pagination.dto';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: ['http://localhost:3001'],
+    credentials: true,
+    exposedHeaders: ['Authorization'],
+  });
   app.useGlobalPipes(new ValidationPipe(VALIDATION_CONFIG));
   // app.useGlobalFilters(new HttpExceptionFilter());
 
