@@ -50,7 +50,7 @@ export class AuthService {
   }
 
   async sendVeryficationCode(email: string) {
-    const verifyCode = Math.floor(Math.random() * 1000000);
+    const verifyCode = Math.floor(Math.random() * 10000);
 
     const mailOptions = {
       to: email,
@@ -59,7 +59,7 @@ export class AuthService {
     } satisfies EmailOptions;
 
     try {
-      await this.cacheManager.set(email, verifyCode, { ttl: 180000 });
+      await this.cacheManager.set(email, verifyCode, { ttl: 180 });
       return await this.transporter.sendMail(mailOptions);
     } catch (err) {
       if (err instanceof Error) {
