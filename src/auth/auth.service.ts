@@ -62,9 +62,11 @@ export class AuthService {
       await this.cacheManager.set(email, verifyCode, { ttl: 180 });
       return await this.transporter.sendMail(mailOptions);
     } catch (err) {
-      throw new InternalServerErrorException(
-        '인증 코드를 Redis에 저장하는 데 실패했습니다',
-      );
+      throw new InternalServerErrorException({
+        message: '인증 코드를 Redis에 저장하는 데 실패했습니다',
+        error: err,
+        statusCode: 500,
+      });
     }
   }
 
