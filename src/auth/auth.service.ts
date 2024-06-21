@@ -59,7 +59,9 @@ export class AuthService {
     } satisfies EmailOptions;
 
     try {
-      await this.cacheManager.set(email, verifyCode);
+      await this.cacheManager.set(email, verifyCode, {
+        ttl: () => 60 * 3,
+      });
       return await this.transporter.sendMail(mailOptions);
     } catch (err) {
       throw new InternalServerErrorException(
