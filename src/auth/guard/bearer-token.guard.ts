@@ -8,15 +8,11 @@ import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { UsersModel } from 'src/users/entity/users.entity';
 import { UsersService } from 'src/users/users.service';
-import { AuthService, jwtPayload } from '../auth.service';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 export class BearerTokenGuard implements CanActivate {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly usersService: UsersService,
-    private readonly reflector: Reflector,
-  ) {}
+  constructor(private readonly reflector: Reflector) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride('isPublic', [
@@ -25,29 +21,12 @@ export class BearerTokenGuard implements CanActivate {
     ]);
 
     const req = ctx.switchToHttp().getRequest() satisfies Request & {
-      user: UsersModel;
-      token: string;
-      tokenType: jwtPayload['type'];
       isRoutePublic?: boolean;
     };
 
     if (isPublic) {
       req.isRoutePublic = true;
-      return true;
     }
-
-    const rawToken = req.headers['authorization'];
-    if (!rawToken) {
-      throw new UnauthorizedException('토큰이 없습니다!');
-    }
-
-    const token = this.authService.extractTokenFromHeader(rawToken);
-    const payload = await this.authService.verifyToken(token);
-    const user = await this.usersService.getUserByEmail(payload.email);
-
-    req.user = user;
-    req.token = token;
-    req.tokenType = payload.type;
 
     return true;
   }
@@ -55,13 +34,19 @@ export class BearerTokenGuard implements CanActivate {
 
 @Injectable()
 export class AccessTokenGuard extends BearerTokenGuard {
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService,
+    reflector: Reflector,
+  ) {
+    super(reflector);
+  }
+
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     await super.canActivate(ctx);
 
     const req = ctx.switchToHttp().getRequest() satisfies Request & {
       user: UsersModel;
-      token: string;
-      tokenType: jwtPayload['type'];
       isRoutePublic?: boolean;
     };
 
@@ -69,9 +54,15 @@ export class AccessTokenGuard extends BearerTokenGuard {
       return true;
     }
 
-    if (req.tokenType !== 'access') {
-      throw new UnauthorizedException('accessToken이 아닙니다.');
+    const accessToken = req.cookies['accessToken'];
+    if (!accessToken) {
+      throw new UnauthorizedException('accessToken이 없습니다.');
     }
+
+    const payload = await this.authService.verifyToken(accessToken);
+    const user = await this.usersService.getUserByEmail(payload.email);
+
+    req.user = user;
 
     return true;
   }
@@ -82,14 +73,10 @@ export class RefreshTokenGuard extends BearerTokenGuard {
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     await super.canActivate(ctx);
 
-    const req = ctx.switchToHttp().getRequest() satisfies Request & {
-      user: UsersModel;
-      token: string;
-      tokenType: jwtPayload['type'];
-    };
+    const req = ctx.switchToHttp().getRequest() satisfies Request;
 
-    if (req.tokenType !== 'refresh') {
-      throw new UnauthorizedException('refreshToken이 아닙니다.');
+    if (!req.cookies['refreshToken']) {
+      throw new UnauthorizedException('refreshToken이 없습니다.');
     }
 
     return true;
