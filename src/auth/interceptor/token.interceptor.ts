@@ -5,7 +5,7 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { Observable, tap } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 @Injectable()
 export class TokenInterceptor implements NestInterceptor {
@@ -16,7 +16,7 @@ export class TokenInterceptor implements NestInterceptor {
     const res = ctx.switchToHttp().getResponse() satisfies Response;
 
     return next.handle().pipe(
-      tap((result) => {
+      map((result) => {
         if (result && result.accessToken && result.refreshToken) {
           res.cookie('accessToken', result.accessToken, {
             httpOnly: true,
