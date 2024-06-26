@@ -17,7 +17,7 @@ export class TokenInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       map((result) => {
-        if (result && result.accessToken && result.refreshToken) {
+        if (result.accessToken && result.refreshToken) {
           res.cookie('accessToken', result.accessToken, {
             httpOnly: true,
             secure: true,
