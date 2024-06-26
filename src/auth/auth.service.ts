@@ -31,16 +31,22 @@ type EmailOptions = {
 
 @Injectable()
 export class AuthService {
-  private transporter: Mail;
-
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
     private readonly configService: ConfigService,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: CacheStore,
-  ) {
-    this.transporter = nodemailer.createTransport({
+  ) {}
+
+  private generateRandomCode() {
+    var min = 100000;
+    var max = 999999;
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  private createTransporter(): Mail {
+    return nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: this.configService.get<string>(ENV.EMAIL_USER_KEY),
@@ -50,8 +56,8 @@ export class AuthService {
   }
 
   async sendVeryficationCode(email: string) {
-    const verifyCode = Math.floor(Math.random() * 1000000);
-
+    const transporter = this.createTransporter();
+    const verifyCode = this.generateRandomCode();
     const mailOptions = {
       to: email,
       subject: '이메일 인증 코드',
@@ -60,7 +66,7 @@ export class AuthService {
 
     try {
       await this.cacheManager.set(email, verifyCode, 180000);
-      return await this.transporter.sendMail(mailOptions);
+      return await transporter.sendMail(mailOptions);
     } catch (err) {
       if (err instanceof Error) {
         throw new InternalServerErrorException(
@@ -197,5 +203,14 @@ export class AuthService {
     }
 
     return this.signToken({ email, id }, requestTokenType);
+  }
+
+  async checkEmailExists(email: string) {
+    try {
+      await this.usersService.getUserByEmail(email);
+      throw new UnauthorizedException('이미 존재하는 이메일입니다');
+    } catch (err) {
+      return { success: true };
+    }
   }
 }

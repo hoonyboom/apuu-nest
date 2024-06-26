@@ -25,18 +25,6 @@ type PaginateParams<T> = {
 export class CommonService {
   constructor(private readonly configService: ConfigService) {}
 
-  get getAddress() {
-    const protocol = this.configService.get<string>(ENV.PROTOCOL_KEY);
-    const host = this.configService.get<string>(ENV.HOST_KEY);
-    const port = this.configService.get<string>(ENV.PORT_KEY);
-
-    return {
-      protocol,
-      host,
-      port,
-    };
-  }
-
   paginate<T extends BaseModel>({
     dto,
     repo,
@@ -67,6 +55,18 @@ export class CommonService {
     };
   }
 
+  private getAddress() {
+    const protocol = this.configService.get<string>(ENV.PROTOCOL_KEY);
+    const host = this.configService.get<string>(ENV.HOST_KEY);
+    const port = this.configService.get<string>(ENV.PORT_KEY);
+
+    return {
+      protocol,
+      host,
+      port,
+    };
+  }
+
   private async cursorPaginate<T extends BaseModel>({
     dto,
     repo,
@@ -79,7 +79,7 @@ export class CommonService {
       ...overrideFindOptions,
     });
 
-    const { protocol, host, port } = this.getAddress;
+    const { protocol, host, port } = this.getAddress();
     const lastItem =
       results.length === dto.take && results.length > 0
         ? results.at(-1).id

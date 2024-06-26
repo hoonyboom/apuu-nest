@@ -54,14 +54,19 @@ export class AuthController {
     return await this.authService.registerWithEmail(body);
   }
 
+  @Post('register/check_email')
+  async postCheckEmailExists(@Body() body: SendVerificationCodeDTO) {
+    return await this.authService.checkEmailExists(body.email);
+  }
+
   @Post('register/send_code')
   async postSendVerificationCode(@Body() body: SendVerificationCodeDTO) {
-    return this.authService.sendVeryficationCode(body.email);
+    return await this.authService.sendVeryficationCode(body.email);
   }
 
   @Post('register/verify_code')
   async postVerifyEmailCode(@Body() body: VerifyEmailCodeDTO) {
-    return this.authService.verifyEmailCode(body.email, body.verify_code);
+    return await this.authService.verifyEmailCode(body.email, body.verify_code);
   }
 
   /**
