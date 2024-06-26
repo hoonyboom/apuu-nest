@@ -152,7 +152,7 @@ export class AuthService {
       password: hash,
     });
 
-    return this.loginUser(newUser);
+    return newUser;
   }
 
   extractTokenFromHeader(header: string) {

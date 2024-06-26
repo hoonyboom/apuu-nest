@@ -21,7 +21,7 @@ import { VerifyEmailCodeDTO } from './dto/verify-code.dto';
 import { SendVerificationCodeDTO } from './dto/verify-email.dto';
 import { BasicTokenGuard } from './guard/basic-token.guard';
 import { RefreshTokenGuard } from './guard/bearer-token.guard';
-import { TokenInterceptor } from './interceptor/token.interceptor';
+import { RegisterInterceptor } from './interceptor/register.interceptor';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -53,7 +53,7 @@ export class AuthController {
    * 길이 제한은 RegisterUserDTO 스키마를 참고해주세요
    */
   @Post('register/email')
-  @UseInterceptors(TokenInterceptor)
+  @UseInterceptors(RegisterInterceptor)
   async postRegisterEmail(@Body() body: RegisterUserDTO) {
     return await this.authService.registerWithEmail(body);
   }

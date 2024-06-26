@@ -6,9 +6,12 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { Observable, map } from 'rxjs';
+import { UsersModel } from 'src/users/entity/users.entity';
+import { AuthService } from '../auth.service';
 
 @Injectable()
-export class TokenInterceptor implements NestInterceptor {
+export class RegisterInterceptor implements NestInterceptor {
+  constructor(private readonly authService: AuthService) {}
   async intercept(
     ctx: ExecutionContext,
     next: CallHandler,
@@ -16,20 +19,23 @@ export class TokenInterceptor implements NestInterceptor {
     const res = ctx.switchToHttp().getResponse() satisfies Response;
 
     return next.handle().pipe(
-      map((result) => {
-        if (result.accessToken && result.refreshToken) {
-          res.cookie('accessToken', result.accessToken, {
+      map((user: UsersModel) => {
+        if (user) {
+          const { accessToken, refreshToken } =
+            this.authService.loginUser(user);
+
+          res.cookie('accessToken', accessToken, {
             httpOnly: true,
             secure: true,
             sameSite: 'strict',
           });
-          res.cookie('refreshToken', result.refreshToken, {
+          res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: true,
             sameSite: 'strict',
           });
 
-          return { success: true };
+          return user;
         }
       }),
     );
