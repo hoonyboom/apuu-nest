@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBasicAuth,
-  ApiBearerAuth,
+  ApiCookieAuth,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -78,14 +78,12 @@ export class AuthController {
    */
   @Post('token/access')
   @UseGuards(RefreshTokenGuard)
-  @ApiBearerAuth()
+  @ApiCookieAuth()
   async postRevalidateAccessToken(@Request() req: RequestType) {
     const token = req.cookies['refreshToken'];
     const newToken = await this.authService.rotateToken(token, 'access');
 
-    return {
-      accessToken: newToken,
-    };
+    return { accessToken: newToken };
   }
 
   /**
@@ -93,13 +91,20 @@ export class AuthController {
    */
   @Post('token/refresh')
   @UseGuards(RefreshTokenGuard)
-  @ApiBearerAuth()
+  @ApiCookieAuth()
   async postRevalidateRefreshToken(@Request() req: RequestType) {
     const token = req.cookies['refreshToken'];
     const newToken = await this.authService.rotateToken(token, 'refresh');
 
-    return {
-      refreshToken: newToken,
-    };
+    return { refreshToken: newToken };
+  }
+
+  @Post('logout')
+  @ApiCookieAuth()
+  async postLogout(@Request() req: RequestType) {
+    req.res.clearCookie('refreshToken');
+    req.res.clearCookie('accessToken');
+
+    return { success: true, message: '로그아웃 성공' };
   }
 }
