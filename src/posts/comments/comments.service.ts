@@ -57,17 +57,13 @@ export class CommentsService {
   ) {
     const repo = this.getRepository(qr);
 
-    try {
-      return await repo.save({
-        ...dto,
-        author,
-        post: {
-          id: postId,
-        },
-      });
-    } catch (err) {
-      throw new BadRequestException('댓글을 생성하는데 실패했습니다');
-    }
+    return await repo.save({
+      ...dto,
+      author,
+      post: {
+        id: postId,
+      },
+    });
   }
 
   async deleteComment(commentId: number, qr?: QueryRunner) {

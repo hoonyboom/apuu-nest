@@ -67,19 +67,26 @@ export class UsersService {
 
   async deleteUser(authorId: number) {
     try {
-      await this.usersRepository.delete(authorId);
-      return { success: true };
+      const result = await this.usersRepository.delete(authorId);
+
+      if (result.affected === 0) {
+        throw new BadRequestException('존재하지 않는 사용자입니다');
+      }
+
+      return { success: true, message: '계정이 삭제되었습니다' };
     } catch (err) {
       throw new ForbiddenException('계정을 삭제하지 못했습니다');
     }
   }
 
   async getUserByEmail(email: string) {
-    try {
-      return await this.usersRepository.findOneBy({ email });
-    } catch (err) {
+    const user = await this.usersRepository.findOneBy({ email });
+
+    if (!user) {
       throw new BadRequestException('존재하지 않는 이메일입니다');
     }
+
+    return user;
   }
 
   async getFollowers(userId: number, includeOnlyConfirmed: boolean) {

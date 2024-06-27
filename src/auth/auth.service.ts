@@ -209,11 +209,11 @@ export class AuthService {
   async checkEmailExists(email: string) {
     try {
       await this.usersService.getUserByEmail(email);
-      throw new UnauthorizedException('이미 존재하는 이메일입니다');
+      throw new UnauthorizedException('이미 가입한 이메일입니다');
     } catch (err) {
       if (err instanceof BadRequestException) {
         return { success: true, message: '사용 가능한 이메일입니다' };
-      } else throw err;
+      } else throw new InternalServerErrorException(err);
     }
   }
 }
