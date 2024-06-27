@@ -1,6 +1,5 @@
 import { CACHE_MANAGER, CacheStore } from '@nestjs/cache-manager';
 import {
-  BadRequestException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -207,13 +206,6 @@ export class AuthService {
   }
 
   async checkEmailExists(email: string) {
-    try {
-      await this.usersService.getUserByEmail(email);
-      throw new UnauthorizedException('이미 가입한 이메일입니다');
-    } catch (err) {
-      if (err instanceof BadRequestException) {
-        return { success: true, message: '사용 가능한 이메일입니다' };
-      } else throw new InternalServerErrorException(err);
-    }
+    return await this.usersService.checkEmailExists(email);
   }
 }

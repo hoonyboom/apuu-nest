@@ -89,6 +89,16 @@ export class UsersService {
     return user;
   }
 
+  async checkEmailExists(email: string) {
+    const isExists = await this.usersRepository.exists({ where: { email } });
+
+    if (isExists) {
+      throw new BadRequestException('이미 존재하는 이메일입니다');
+    }
+
+    return { success: true };
+  }
+
   async getFollowers(userId: number, includeOnlyConfirmed: boolean) {
     const where = {
       followee: { id: userId },
