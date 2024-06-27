@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Headers,
   Post,
   Request,
   UseGuards,
@@ -13,6 +12,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Request as RequestType } from 'express';
 import { UsersModel } from 'src/users/entity/users.entity';
 import { AuthService } from './auth.service';
 import { IsPublic } from './decorator/is-public.decorator';
@@ -43,7 +43,7 @@ export class AuthController {
   })
   async postLoginEmail(
     @Request()
-    req: Request & { user: UsersModel },
+    req: RequestType & { user: UsersModel },
   ) {
     return req.user;
   }
@@ -79,10 +79,8 @@ export class AuthController {
   @Post('token/access')
   @UseGuards(RefreshTokenGuard)
   @ApiBearerAuth()
-  async postRevalidateAccessToken(
-    @Headers('Authorization') authorization: string,
-  ) {
-    const token = this.authService.extractTokenFromHeader(authorization);
+  async postRevalidateAccessToken(@Request() req: RequestType) {
+    const token = req.cookies['refreshToken'];
     const newToken = await this.authService.rotateToken(token, 'access');
 
     return {
@@ -96,10 +94,8 @@ export class AuthController {
   @Post('token/refresh')
   @UseGuards(RefreshTokenGuard)
   @ApiBearerAuth()
-  async postRevalidateRefreshToken(
-    @Headers('Authorization') authorization: string,
-  ) {
-    const token = this.authService.extractTokenFromHeader(authorization);
+  async postRevalidateRefreshToken(@Request() req: RequestType) {
+    const token = req.cookies['refreshToken'];
     const newToken = await this.authService.rotateToken(token, 'refresh');
 
     return {
