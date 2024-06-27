@@ -93,7 +93,7 @@ export class UsersService {
     const isExists = await this.usersRepository.exists({ where: { email } });
 
     if (isExists) {
-      throw new BadRequestException('이미 존재하는 이메일입니다');
+      throw new ForbiddenException('이미 존재하는 이메일입니다');
     }
 
     return { success: true };
