@@ -83,7 +83,13 @@ export class AuthController {
     const token = req.cookies['refreshToken'];
     const newToken = await this.authService.rotateToken(token, 'access');
 
-    return { accessToken: newToken };
+    req.res.cookie('accessToken', newToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+    });
+
+    return { success: true, message: 'accessToken 재발급 성공' };
   }
 
   /**
@@ -96,10 +102,17 @@ export class AuthController {
     const token = req.cookies['refreshToken'];
     const newToken = await this.authService.rotateToken(token, 'refresh');
 
-    return { refreshToken: newToken };
+    req.res.cookie('refreshToken', newToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+    });
+
+    return { success: true, message: 'refreshToken 재발급 성공' };
   }
 
   @Post('logout')
+  @UseGuards(RefreshTokenGuard)
   @ApiCookieAuth()
   async postLogout(@Request() req: RequestType) {
     req.res.clearCookie('refreshToken');
