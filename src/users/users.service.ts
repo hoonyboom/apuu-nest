@@ -96,7 +96,7 @@ export class UsersService {
       throw new ForbiddenException('이미 존재하는 이메일입니다');
     }
 
-    return { success: true };
+    return { success: true, message: '사용 가능한 이메일입니다' };
   }
 
   async getFollowers(userId: number, includeOnlyConfirmed: boolean) {
