@@ -80,17 +80,7 @@ export class AuthController {
   @UseGuards(RefreshTokenGuard)
   @ApiCookieAuth()
   async postRevalidateAccessToken(@Request() req: RequestType) {
-    const token = req.cookies['refreshToken'];
-    const newToken = await this.authService.rotateToken(token, 'access');
-
-    req.res.cookie('accessToken', newToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      expires: new Date(Date.now() + 1000 * 60 * 5), // 5분,
-    });
-
-    return { success: true, message: 'accessToken 재발급 성공' };
+    return await this.authService.revalidateTokenCookie(req, 'access');
   }
 
   /**
@@ -100,26 +90,17 @@ export class AuthController {
   @UseGuards(RefreshTokenGuard)
   @ApiCookieAuth()
   async postRevalidateRefreshToken(@Request() req: RequestType) {
-    const token = req.cookies['refreshToken'];
-    const newToken = await this.authService.rotateToken(token, 'refresh');
-
-    req.res.cookie('refreshToken', newToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      expires: new Date(Date.now() + 1000 * 60 * 60), // 1시간,
-    });
-
-    return { success: true, message: 'refreshToken 재발급 성공' };
+    return await this.authService.revalidateTokenCookie(req, 'refresh');
   }
 
   @Post('logout')
   @UseGuards(RefreshTokenGuard)
   @ApiCookieAuth()
-  async postLogout(@Request() req: RequestType) {
-    req.res.clearCookie('refreshToken');
-    req.res.clearCookie('accessToken');
-
-    return { success: true, message: '로그아웃 성공' };
+  postLogout(@Request() req: RequestType) {
+    this.authService.clearAllCookies(req.res, [
+      'refreshToken',
+      'accessToken',
+      'isTokenAlive',
+    ]);
   }
 }

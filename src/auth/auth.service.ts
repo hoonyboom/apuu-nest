@@ -9,6 +9,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bycrypt from 'bcrypt';
+import { CookieOptions, Request, Response } from 'express';
 import * as nodemailer from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
 import { ENV } from 'src/common/const/env.const';
@@ -206,5 +207,36 @@ export class AuthService {
 
   async checkEmailExists(email: string) {
     return await this.usersService.checkEmailExists(email);
+  }
+
+  async revalidateTokenCookie(req: Request, type: 'access' | 'refresh') {
+    const token = req.cookies[`${type}Token`];
+    const newToken = await this.rotateToken(token, type);
+    this.gererateCookie(req.res, 'refreshToken', newToken);
+
+    return { success: true, message: `${type}Token 재발급 성공` };
+  }
+
+  gererateCookie(
+    res: Response,
+    name: string,
+    value: string | boolean | number,
+    options?: CookieOptions,
+  ) {
+    res.cookie(name, value, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      expires:
+        name === 'refreshToken'
+          ? new Date(Date.now() + 1000 * 60 * 60)
+          : new Date(Date.now() + 1000 * 60 * 5),
+      ...options,
+    });
+  }
+
+  clearAllCookies(res: Response, names: string[]) {
+    names.forEach((name) => res.clearCookie(name));
+    return { success: true, message: '로그아웃 성공' };
   }
 }

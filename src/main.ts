@@ -11,8 +11,8 @@ async function bootstrap() {
   app.enableCors({
     origin: ['http://localhost:3001'],
     credentials: true,
-    exposedHeaders: ['Authorization'],
   });
+
   app.useGlobalPipes(new ValidationPipe(VALIDATION_CONFIG));
   // app.useGlobalFilters(new HttpExceptionFilter());
 

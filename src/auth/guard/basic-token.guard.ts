@@ -34,15 +34,10 @@ export class BasicTokenGuard implements CanActivate {
 
     req.user = user;
 
-    res.cookie('accessToken', tokens.accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-    });
-    res.cookie('refreshToken', tokens.refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
+    this.authService.gererateCookie(res, 'refreshToken', tokens.refreshToken);
+    this.authService.gererateCookie(res, 'accessToken', tokens.accessToken);
+    this.authService.gererateCookie(res, 'isTokenAlive', true, {
+      httpOnly: false,
     });
 
     return true;
