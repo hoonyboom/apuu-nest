@@ -19,8 +19,8 @@ import { IsPublic } from './decorator/is-public.decorator';
 import { RegisterUserDTO } from './dto/register-user.dto';
 import { VerifyEmailCodeDTO } from './dto/verify-code.dto';
 import { SendVerificationCodeDTO } from './dto/verify-email.dto';
+import { RefreshTokenGuard } from './guard/base-token.guard';
 import { BasicTokenGuard } from './guard/basic-token.guard';
-import { RefreshTokenGuard } from './guard/bearer-token.guard';
 import { RegisterInterceptor } from './interceptor/register.interceptor';
 
 @ApiTags('Auth')
@@ -87,6 +87,7 @@ export class AuthController {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
+      expires: new Date(Date.now() + 1000 * 60 * 5), // 5분,
     });
 
     return { success: true, message: 'accessToken 재발급 성공' };
@@ -106,6 +107,7 @@ export class AuthController {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
+      expires: new Date(Date.now() + 1000 * 60 * 60), // 1시간,
     });
 
     return { success: true, message: 'refreshToken 재발급 성공' };
