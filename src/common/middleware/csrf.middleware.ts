@@ -4,11 +4,9 @@ import { NextFunction, Request, Response } from 'express';
 
 @Injectable()
 export class CsrfTokenIssuingMiddleware implements NestMiddleware {
-  constructor(
-    private readonly csrfProtection: ReturnType<typeof csurf> = csurf({
-      cookie: true,
-    }),
-  ) {}
+  private readonly csrfProtection: ReturnType<typeof csurf> = csurf({
+    cookie: true,
+  });
 
   use(req: Request, res: Response, next: NextFunction) {
     this.csrfProtection(req, res, () => {
@@ -26,11 +24,9 @@ export class CsrfTokenIssuingMiddleware implements NestMiddleware {
 
 @Injectable()
 export class CsrfProtectionMiddleware implements NestMiddleware {
-  constructor(
-    private readonly csrfProtection: ReturnType<typeof csurf> = csurf({
-      cookie: true,
-    }),
-  ) {}
+  private readonly csrfProtection: ReturnType<typeof csurf> = csurf({
+    cookie: true,
+  });
 
   use(req: Request, res: Response, next: NextFunction) {
     this.csrfProtection(req, res, next);
