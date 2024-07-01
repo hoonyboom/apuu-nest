@@ -118,14 +118,14 @@ export class AppModule implements NestModule {
     consumer
       .apply(CsrfTokenIssuingMiddleware)
       .forRoutes(
-        { path: '/api/auth/login/email', method: RequestMethod.POST },
-        { path: '/api/auth/register/email', method: RequestMethod.POST },
-        { path: '/api/auth/token/access', method: RequestMethod.POST },
+        { path: 'auth/login/email', method: RequestMethod.POST },
+        { path: 'auth/register/email', method: RequestMethod.POST },
+        { path: 'auth/token/access', method: RequestMethod.POST },
       );
 
     consumer
       .apply(CsrfProtectionMiddleware)
-      // .exclude({ path: 'auth/*', method: RequestMethod.ALL })
+      .exclude({ path: 'auth/*', method: RequestMethod.ALL })
       .forRoutes(
         { path: '*', method: RequestMethod.POST },
         { path: '*', method: RequestMethod.PATCH },
