@@ -53,10 +53,20 @@ export class AccessTokenGuard extends BaseTokenGuard {
     const req = ctx.switchToHttp().getRequest() satisfies Request & {
       user: UsersModel;
       isRoutePublic?: boolean;
+      headers: {
+        'XSRF-TOKEN': string;
+      };
     };
 
+    // isRoutePublic이 true면 토큰 검증을 수행하지 않습니다.
     if (req.isRoutePublic) {
       return true;
+    }
+
+    // GET 요청이 아닌 경우에만 XSRF 토큰을 검증합니다.
+    if (req.method !== 'GET') {
+      const xsrfToken = req.headers['XSRF-TOKEN'];
+      await this.authService.verifyToken(xsrfToken);
     }
 
     const accessToken = req.cookies['accessToken'];

@@ -20,7 +20,7 @@ import { RegisterUserDTO } from './dto/register-user.dto';
 export type jwtPayload = {
   sub: number;
   email: string;
-  type: 'access' | 'refresh';
+  type: 'accessToken' | 'refreshToken' | 'XSRF-TOKEN';
 };
 
 type TokenType = 'Bearer' | 'Basic';
@@ -93,7 +93,7 @@ export class AuthService {
 
   signToken(
     { email, id }: Pick<UsersModel, 'email' | 'id'>,
-    requestTokenType: 'access' | 'refresh',
+    requestTokenType: jwtPayload['type'],
   ) {
     const payload = {
       sub: id,
@@ -103,15 +103,25 @@ export class AuthService {
 
     return this.jwtService.sign(payload, {
       secret: this.configService.get<string>(ENV.JWT_SECRET_KEY),
-      expiresIn: requestTokenType === 'refresh' ? '1h' : '5m',
+      expiresIn: requestTokenType === 'refreshToken' ? '1h' : '5m',
     });
   }
 
-  loginUser(user: UsersModel) {
-    return {
-      accessToken: this.signToken(user, 'access'),
-      refreshToken: this.signToken(user, 'refresh'),
+  loginUser(req: Request, user: UsersModel) {
+    const tokens = {
+      accessToken: this.signToken(user, 'accessToken'),
+      refreshToken: this.signToken(user, 'refreshToken'),
+      xsrfToken: this.signToken(user, 'XSRF-TOKEN'),
     };
+
+    this.issueCookie(req.res, 'refreshToken', tokens.refreshToken);
+    this.issueCookie(req.res, 'accessToken', tokens.accessToken);
+    this.issueCookie(req.res, 'XSRF-TOKEN', tokens.xsrfToken, {
+      httpOnly: false,
+    });
+    this.issueCookie(req.res, 'isTokenAlive', true, {
+      httpOnly: false,
+    });
   }
 
   async authenticateWithEmailAndPassword({
@@ -128,16 +138,18 @@ export class AuthService {
     return existingUser;
   }
 
-  async loginWithEmail({
-    email,
-    password,
-  }: Pick<UsersModel, 'email' | 'password'>) {
+  async loginWithEmail(
+    req: Request,
+    { email, password }: Pick<UsersModel, 'email' | 'password'>,
+  ) {
     const existingUser = await this.authenticateWithEmailAndPassword({
       email,
       password,
     });
 
-    return this.loginUser(existingUser);
+    this.loginUser(req, existingUser);
+
+    return existingUser;
   }
 
   async registerWithEmail({ email, password, nickname }: RegisterUserDTO) {
@@ -192,11 +204,14 @@ export class AuthService {
     }
   }
 
-  async rotateToken(token: string, requestTokenType: 'access' | 'refresh') {
-    const payload = await this.verifyToken(token);
+  async rotateToken(
+    refreshToken: string,
+    requestTokenType: jwtPayload['type'],
+  ) {
+    const payload = await this.verifyToken(refreshToken);
     const { email, sub: id, type } = payload;
 
-    if (type !== 'refresh') {
+    if (type !== 'refreshToken') {
       throw new UnauthorizedException(
         '토큰 재발급은 refreshToken이 필요합니다',
       );
@@ -209,17 +224,21 @@ export class AuthService {
     return await this.usersService.checkEmailExists(email);
   }
 
-  async revalidateTokenCookie(req: Request, type: 'access' | 'refresh') {
-    const token = req.cookies[`${type}Token`];
-    const newToken = await this.rotateToken(token, type);
-    this.gererateCookie(req.res, 'refreshToken', newToken);
+  async revalidateTokenCookie(
+    req: Request,
+    requestedToken: jwtPayload['type'],
+    options?: CookieOptions,
+  ) {
+    const refreshToken = req.cookies['refreshToken'];
+    const newToken = await this.rotateToken(refreshToken, requestedToken);
+    this.issueCookie(req.res, requestedToken, newToken, options);
 
-    return { success: true, message: `${type}Token 재발급 성공` };
+    return { success: true, message: `${requestedToken} 재발급 성공` };
   }
 
-  gererateCookie(
+  issueCookie(
     res: Response,
-    name: string,
+    name: jwtPayload['type'] | 'isTokenAlive',
     value: string | boolean | number,
     options?: CookieOptions,
   ) {
@@ -235,8 +254,16 @@ export class AuthService {
     });
   }
 
-  clearAllCookies(res: Response, names: string[]) {
-    names.forEach((name) => res.clearCookie(name));
+  clearAllCookies(res: Response) {
+    const allCookies = [
+      'XSRF-TOKEN',
+      'accessToken',
+      'isTokenAlive',
+      'refreshToken',
+    ] satisfies (jwtPayload['type'] | 'isTokenAlive')[];
+
+    allCookies.forEach((cookie) => res.clearCookie(cookie));
+
     return { success: true, message: '로그아웃 성공' };
   }
 }

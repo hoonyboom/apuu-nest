@@ -2,7 +2,7 @@ import {
   Body,
   Controller,
   Post,
-  Request,
+  Req,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -12,7 +12,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Request as RequestType } from 'express';
+import { Request } from 'express';
 import { UsersModel } from 'src/users/entity/users.entity';
 import { AuthService } from './auth.service';
 import { IsPublic } from './decorator/is-public.decorator';
@@ -41,10 +41,7 @@ export class AuthController {
     description: '로그인 성공',
     type: RegisterUserDTO,
   })
-  async postLoginEmail(
-    @Request()
-    req: RequestType & { user: UsersModel },
-  ) {
+  async postLoginEmail(@Req() req: Request & { user: UsersModel }) {
     return req.user;
   }
 
@@ -79,8 +76,14 @@ export class AuthController {
   @Post('token/access')
   @UseGuards(RefreshTokenGuard)
   @ApiCookieAuth()
-  async postRevalidateAccessToken(@Request() req: RequestType) {
-    return await this.authService.revalidateTokenCookie(req, 'access');
+  async postRevalidateAccessToken(@Req() req: Request) {
+    this.authService.issueCookie(req.res, 'isTokenAlive', true, {
+      httpOnly: false,
+    });
+    await this.authService.revalidateTokenCookie(req, 'XSRF-TOKEN', {
+      httpOnly: false,
+    });
+    return await this.authService.revalidateTokenCookie(req, 'accessToken');
   }
 
   /**
@@ -89,18 +92,14 @@ export class AuthController {
   @Post('token/refresh')
   @UseGuards(RefreshTokenGuard)
   @ApiCookieAuth()
-  async postRevalidateRefreshToken(@Request() req: RequestType) {
-    return await this.authService.revalidateTokenCookie(req, 'refresh');
+  async postRevalidateRefreshToken(@Req() req: Request) {
+    return await this.authService.revalidateTokenCookie(req, 'refreshToken');
   }
 
   @Post('logout')
   @UseGuards(RefreshTokenGuard)
   @ApiCookieAuth()
-  postLogout(@Request() req: RequestType) {
-    this.authService.clearAllCookies(req.res, [
-      'refreshToken',
-      'accessToken',
-      'isTokenAlive',
-    ]);
+  postLogout(@Req() req: Request) {
+    this.authService.clearAllCookies(req.res);
   }
 }

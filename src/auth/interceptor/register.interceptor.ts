@@ -4,7 +4,7 @@ import {
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Request } from 'express';
 import { Observable, map } from 'rxjs';
 import { UsersModel } from 'src/users/entity/users.entity';
 import { AuthService } from '../auth.service';
@@ -16,24 +16,12 @@ export class RegisterInterceptor implements NestInterceptor {
     ctx: ExecutionContext,
     next: CallHandler,
   ): Promise<Observable<any>> {
-    const res = ctx.switchToHttp().getResponse() satisfies Response;
+    const req = ctx.switchToHttp().getRequest() satisfies Request;
 
     return next.handle().pipe(
       map((user: UsersModel) => {
         if (user) {
-          const { accessToken, refreshToken } =
-            this.authService.loginUser(user);
-
-          res.cookie('accessToken', accessToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'strict',
-          });
-          res.cookie('refreshToken', refreshToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'strict',
-          });
+          this.authService.loginUser(req, user);
 
           return user;
         }
