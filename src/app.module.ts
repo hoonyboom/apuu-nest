@@ -1,11 +1,5 @@
 import { CacheModule } from '@nestjs/cache-manager';
-import {
-  ClassSerializerInterceptor,
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  RequestMethod,
-} from '@nestjs/common';
+import { ClassSerializerInterceptor, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -24,10 +18,6 @@ import { CommonModule } from './common/common.module';
 import { PUBLIC_FOLDER_PATH } from './common/const/path.const';
 import { BaseModel } from './common/entities/base.entity';
 import { ImagesModel } from './common/entities/image.entity';
-import {
-  CsrfProtectionMiddleware,
-  CsrfTokenIssuingMiddleware,
-} from './common/middleware/csrf.middleware';
 import { CommentsModule } from './posts/comments/comments.module';
 import { CommentsModel } from './posts/comments/entity/comment.entity';
 import { PostsModel } from './posts/entity/posts.entity';
@@ -113,22 +103,21 @@ import { UsersModule } from './users/users.module';
     },
   ],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(CsrfTokenIssuingMiddleware)
-      .forRoutes(
-        { path: 'login/email', method: RequestMethod.POST },
-        { path: 'register/email', method: RequestMethod.POST },
-        { path: 'token/access', method: RequestMethod.POST },
-      );
-
-    consumer
-      .apply(CsrfProtectionMiddleware)
-      .forRoutes(
-        { path: '*', method: RequestMethod.POST },
-        { path: '*', method: RequestMethod.PATCH },
-        { path: '*', method: RequestMethod.DELETE },
-      );
-  }
+export class AppModule {
+  // configure(consumer: MiddlewareConsumer) {
+  //   consumer
+  //     .apply(CsrfTokenIssuingMiddleware)
+  //     .forRoutes(
+  //       { path: 'login/email', method: RequestMethod.POST },
+  //       { path: 'register/email', method: RequestMethod.POST },
+  //       { path: 'token/access', method: RequestMethod.POST },
+  //     );
+  //   consumer
+  //     .apply(CsrfProtectionMiddleware)
+  //     .forRoutes(
+  //       { path: '*', method: RequestMethod.POST },
+  //       { path: '*', method: RequestMethod.PATCH },
+  //       { path: '*', method: RequestMethod.DELETE },
+  //     );
+  // }
 }
