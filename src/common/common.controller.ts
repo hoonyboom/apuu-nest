@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
-import 'multer';
 import { CommonService } from './common.service';
 import { DeleteImageDTO } from './dto/delete-image.dto';
 
