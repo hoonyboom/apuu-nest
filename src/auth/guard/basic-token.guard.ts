@@ -16,6 +16,7 @@ export class BasicTokenGuard implements CanActivate {
     const req = ctx.switchToHttp().getRequest() satisfies Request & {
       user: UsersModel;
     };
+
     const rawToken = req.headers['authorization'];
 
     if (!rawToken) {

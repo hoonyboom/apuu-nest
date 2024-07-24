@@ -1,6 +1,7 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommonService } from 'src/common/common.service';
+import { ImageModelType } from 'src/common/entities/image.entity';
 import { QueryRunner, Repository } from 'typeorm';
 import { CreatePostDTO } from './dto/create-post.dto';
 import { PostPaginateDTO } from './dto/paginate-post.dto';
@@ -23,17 +24,20 @@ export class PostsService {
     });
   }
 
-  async getPost(id: number, qr?: QueryRunner) {
-    const repo = this.getRepository(qr);
-    return await repo.findOneByOrFail({ id });
-  }
-
-  getRepository(qr?: QueryRunner) {
+  getPostRepository(qr?: QueryRunner) {
     return qr ? qr.manager.getRepository(PostsModel) : this.postsRepository;
   }
 
+  async getPostbyId(id: number, qr?: QueryRunner) {
+    const repo = this.getPostRepository(qr);
+    const post = await repo.findOneBy({ id });
+    if (!post) throw new NotFoundException('존재하지 않는 포스트입니다');
+
+    return post;
+  }
+
   async createPost(authorId: number, postDto: CreatePostDTO, qr?: QueryRunner) {
-    const repo = this.getRepository(qr);
+    const repo = this.getPostRepository(qr);
 
     const post = repo.create({
       author: {
@@ -44,23 +48,21 @@ export class PostsService {
     });
 
     const newPost = await this.postsRepository.save(post);
-    return { success: true, data: newPost };
+    return newPost;
   }
 
-  async updatePost(id: number, { title, content }: UpdatePostDTO) {
-    const post = await this.postsRepository.findOneOrFail({
-      where: { id },
+  async updatePost(postId: number, dto: UpdatePostDTO, qr?: QueryRunner) {
+    const repo = this.getPostRepository(qr);
+    const post = await repo.preload({
+      id: postId,
+      title: dto.title,
+      content: dto.content,
     });
 
-    const updatedPost = this.postsRepository.create({
-      title,
-      content,
-    });
+    if (!post) throw new NotFoundException('존재하지 않는 포스트입니다.');
 
-    this.postsRepository.merge(post, updatedPost);
-
-    const newPost = await this.postsRepository.save(post);
-    return { success: true, data: newPost };
+    const newPost = await repo.save(post);
+    return newPost;
   }
 
   async deletePost(id: number) {
@@ -70,7 +72,25 @@ export class PostsService {
       await this.postsRepository.delete(id);
       return { success: true };
     } else {
-      throw new ForbiddenException('포스트를 찾을 수 없습니다');
+      throw new NotFoundException('포스트를 찾을 수 없습니다');
+    }
+  }
+
+  async insertPostImages(
+    body: CreatePostDTO | UpdatePostDTO,
+    post: PostsModel,
+    qr?: QueryRunner,
+  ) {
+    for (let i = 0; i < body.images.length; i++) {
+      await this.commonService.createImage(
+        {
+          order: i,
+          src: body.images[i],
+          post: post,
+          type: ImageModelType.POST_IMAGE,
+        },
+        qr,
+      );
     }
   }
 
@@ -92,7 +112,7 @@ export class PostsService {
     postId: number,
     qr?: QueryRunner,
   ) {
-    const repo = this.getRepository(qr);
+    const repo = this.getPostRepository(qr);
     return type === 'inc'
       ? await repo.increment({ id: postId }, 'commentsCount', 1)
       : await repo.decrement({ id: postId }, 'commentsCount', 1);

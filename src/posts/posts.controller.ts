@@ -13,16 +13,15 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { IsPublic } from 'src/auth/decorator/is-public.decorator';
+import { CommonService } from 'src/common/common.service';
 import { QR } from 'src/common/decorator/query-runner.decorator';
-import { ImageModelType } from 'src/common/entities/image.entity';
-import { QueryRunnerInterceotor as QueryRunnerInterceptor } from 'src/common/interceptor/query-runner.interceptor';
+import { QueryRunnerInterceptor } from 'src/common/interceptor/query-runner.interceptor';
 import { User } from 'src/users/decorator/user.decorator';
 import { QueryRunner } from 'typeorm';
 import { CreatePostDTO } from './dto/create-post.dto';
 import { PostPaginateDTO } from './dto/paginate-post.dto';
 import { UpdatePostDTO } from './dto/updatePost.dto';
 import { IsPostMineOrAdminGuard } from './guard/is-post-mine-or-admin.guard';
-import { PostsImagesService } from './images/images.service';
 import { PostsService } from './posts.service';
 
 @ApiTags('Posts')
@@ -30,7 +29,7 @@ import { PostsService } from './posts.service';
 export class PostsController {
   constructor(
     private readonly postsService: PostsService,
-    private readonly postImagesService: PostsImagesService,
+    private readonly commonService: CommonService,
   ) {}
 
   @Get()
@@ -42,7 +41,7 @@ export class PostsController {
   @Get(':pid')
   @IsPublic()
   getPostById(@Param('pid', ParseIntPipe) postId: number) {
-    return this.postsService.getPost(postId);
+    return this.postsService.getPostbyId(postId);
   }
 
   @Post()
@@ -52,34 +51,24 @@ export class PostsController {
     @Body() body: CreatePostDTO,
     @QR() qr: QueryRunner,
   ) {
-    const { data: post } = await this.postsService.createPost(
-      authorId,
-      body,
-      qr,
-    );
-
-    for (let i = 0; i < body.images.length; i++) {
-      await this.postImagesService.createPostImage(
-        {
-          order: i,
-          path: body.images[i],
-          post: post,
-          type: ImageModelType.POST_IMAGE,
-        },
-        qr,
-      );
-    }
-
-    return await this.postsService.getPost(post.id, qr);
+    console.log({ body });
+    const post = await this.postsService.createPost(authorId, body, qr);
+    console.log({ post });
+    await this.postsService.insertPostImages(body, post, qr);
+    return await this.postsService.getPostbyId(post.id, qr);
   }
 
   @Patch(':pid')
+  @UseInterceptors(QueryRunnerInterceptor)
   @UseGuards(IsPostMineOrAdminGuard)
   async patchPost(
     @Param('pid', ParseIntPipe) postId: number,
     @Body() body: UpdatePostDTO,
+    @QR() qr: QueryRunner,
   ) {
-    return await this.postsService.updatePost(postId, body);
+    const post = await this.postsService.updatePost(postId, body, qr);
+    await this.postsService.insertPostImages(body, post, qr);
+    return await this.postsService.getPostbyId(postId, qr);
   }
 
   @Delete(':pid')

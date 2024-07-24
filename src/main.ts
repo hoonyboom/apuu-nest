@@ -1,6 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { ENV } from './common/const/env.const';
 import { VALIDATION_CONFIG } from './common/const/validation-config.const';
@@ -9,10 +10,11 @@ import { BasePaginateDTO } from './common/dto/base-pagination.dto';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-    origin: ['http://localhost:3001'],
+    origin: 'http://localhost:3001',
     credentials: true,
   });
 
+  app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe(VALIDATION_CONFIG));
   // app.useGlobalFilters(new HttpExceptionFilter());
 

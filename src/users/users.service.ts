@@ -1,12 +1,17 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { AuthService } from 'src/auth/auth.service';
 import { CommonService } from 'src/common/common.service';
 import { BasePaginateDTO } from 'src/common/dto/base-pagination.dto';
 import { QueryRunner, Repository } from 'typeorm';
+import { Roles } from './const/roles.const';
+import { UpdateProfileDTO } from './dto/update-profile.dto';
 import { UsersFollowersModel } from './entity/user-followers.entity';
 import { UsersModel } from './entity/users.entity';
 
@@ -17,6 +22,8 @@ export class UsersService {
     private readonly usersRepository: Repository<UsersModel>,
     @InjectRepository(UsersFollowersModel)
     private readonly usersFollowersRepository: Repository<UsersFollowersModel>,
+    @Inject(forwardRef(() => AuthService))
+    private readonly authService: AuthService,
     private readonly commonService: CommonService,
   ) {}
 
@@ -30,7 +37,9 @@ export class UsersService {
   }
 
   async getUser(id: number) {
-    const user = await this.usersRepository.findOneByOrFail({ id });
+    const user = await this.usersRepository.findOneBy({ id });
+    if (!user) throw new BadRequestException('존재하지 않는 사용자입니다');
+
     return user;
   }
 
@@ -43,26 +52,62 @@ export class UsersService {
   }
 
   async createUser(body: Pick<UsersModel, 'email' | 'password' | 'nickname'>) {
-    const nicknameExists = await this.usersRepository.exists({
-      where: { nickname: body.nickname },
-    });
-
-    if (nicknameExists) {
-      throw new BadRequestException('이미 존재하는 닉네임입니다');
-    }
-
-    const emailExists = await this.usersRepository.exists({
-      where: { nickname: body.nickname },
-    });
-
-    if (emailExists) {
-      throw new BadRequestException('이미 존재하는 이메일입니다');
-    }
+    await this.checkNicknameExists(body.nickname);
+    await this.checkEmailExists(body.email);
 
     const user = this.usersRepository.create(body);
     const newUser = await this.usersRepository.save(user);
 
-    return { success: true, data: newUser };
+    return newUser;
+  }
+
+  async checkNicknameExists(nickname: string) {
+    const isExists = await this.usersRepository.exists({ where: { nickname } });
+
+    if (isExists) {
+      throw new ForbiddenException('이미 존재하는 닉네임입니다');
+    }
+
+    return true;
+  }
+
+  async updateUserProfile(
+    userId: number,
+    dto: UpdateProfileDTO,
+    qr?: QueryRunner,
+  ) {
+    const repo = this.getUsersRepository(qr);
+
+    if (dto.nickname) {
+      await this.checkNicknameExists(dto.nickname);
+    }
+
+    if (dto.password) {
+      var hash = await this.authService.hashPassword(dto.password);
+    }
+
+    const user = await repo.preload({
+      id: userId,
+      nickname: dto.nickname,
+      password: hash,
+    });
+
+    if (!user) throw new BadRequestException('존재하지 않는 사용자입니다');
+
+    return await repo.save(user);
+  }
+
+  async updateUserRole(userId: number, isPrime: boolean) {
+    const user = await this.usersRepository.preload({
+      id: userId,
+      role: isPrime ? Roles.PRIME : Roles.FREETIER,
+    });
+
+    if (!user) {
+      throw new BadRequestException('존재하지 않는 사용자입니다');
+    }
+
+    return await this.usersRepository.save(user);
   }
 
   async deleteUser(authorId: number) {
@@ -96,7 +141,7 @@ export class UsersService {
       throw new ForbiddenException('이미 존재하는 이메일입니다');
     }
 
-    return { success: true, message: '사용 가능한 이메일입니다' };
+    return true;
   }
 
   async getFollowers(userId: number, includeOnlyConfirmed: boolean) {

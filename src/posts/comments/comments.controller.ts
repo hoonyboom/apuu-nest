@@ -14,7 +14,7 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { IsPublic } from 'src/auth/decorator/is-public.decorator';
 import { QR } from 'src/common/decorator/query-runner.decorator';
-import { QueryRunnerInterceotor } from 'src/common/interceptor/query-runner.interceptor';
+import { QueryRunnerInterceptor } from 'src/common/interceptor/query-runner.interceptor';
 import { User } from 'src/users/decorator/user.decorator';
 import { UsersModel } from 'src/users/entity/users.entity';
 import { QueryRunner } from 'typeorm';
@@ -49,7 +49,7 @@ export class CommentsController {
   }
 
   @Post()
-  @UseInterceptors(QueryRunnerInterceotor)
+  @UseInterceptors(QueryRunnerInterceptor)
   async postComment(
     @Body() dto: CreateCommentDTO,
     @Param('pid', ParseIntPipe) postId: number,
@@ -69,7 +69,7 @@ export class CommentsController {
 
   @Patch(':cid')
   @UseGuards(IsCommentMineOrAdminGuard)
-  @UseInterceptors(QueryRunnerInterceotor)
+  @UseInterceptors(QueryRunnerInterceptor)
   async patchComment(
     @Param('cid', ParseIntPipe) commentId: number,
     @Body() dto: UpdateCommentDTO,
@@ -80,7 +80,7 @@ export class CommentsController {
 
   @Delete(':cid')
   @UseGuards(IsCommentMineOrAdminGuard)
-  @UseInterceptors(QueryRunnerInterceotor)
+  @UseInterceptors(QueryRunnerInterceptor)
   async deleteComment(
     @Param('cid', ParseIntPipe) commentId: number,
     @Param('pid', ParseIntPipe) postId: number,

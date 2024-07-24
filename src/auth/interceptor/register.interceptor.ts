@@ -22,7 +22,6 @@ export class RegisterInterceptor implements NestInterceptor {
       map((user: UsersModel) => {
         if (user) {
           this.authService.loginUser(req, user);
-
           return user;
         }
       }),

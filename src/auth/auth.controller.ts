@@ -77,7 +77,7 @@ export class AuthController {
   @UseGuards(RefreshTokenGuard)
   @ApiCookieAuth()
   async postRevalidateAccessToken(@Req() req: Request) {
-    this.authService.issueCookie(req.res, 'isTokenAlive', true, {
+    this.authService.issueCookie(req, 'isTokenAlive', true, {
       httpOnly: false,
     });
     await this.authService.revalidateTokenCookie(req, 'XSRF-TOKEN', {
@@ -100,6 +100,6 @@ export class AuthController {
   @UseGuards(RefreshTokenGuard)
   @ApiCookieAuth()
   postLogout(@Req() req: Request) {
-    this.authService.clearAllCookies(req.res);
+    return this.authService.clearAllCookies(req);
   }
 }

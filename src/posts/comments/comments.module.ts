@@ -1,8 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from 'src/auth/auth.module';
 import { CommonModule } from 'src/common/common.module';
-import { UsersModule } from 'src/users/users.module';
 import { PostsModule } from '../posts.module';
 import { CommentsController } from './comments.controller';
 import { CommentsService } from './comments.service';
@@ -13,9 +11,7 @@ import { PostExistsMiddlware } from './middleware/post-exist.middleware';
   imports: [
     TypeOrmModule.forFeature([CommentsModel]),
     CommonModule,
-    AuthModule,
-    UsersModule,
-    PostsModule,
+    PostsModule, // 아래 미들웨어에서 PostsService 주입중
   ],
   controllers: [CommentsController],
   providers: [CommentsService],

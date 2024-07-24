@@ -10,7 +10,7 @@ import { Observable, catchError, tap } from 'rxjs';
 import { DataSource, QueryRunner } from 'typeorm';
 
 @Injectable()
-export class QueryRunnerInterceotor implements NestInterceptor {
+export class QueryRunnerInterceptor implements NestInterceptor {
   constructor(private readonly dataSource: DataSource) {}
 
   async intercept(
@@ -31,7 +31,6 @@ export class QueryRunnerInterceotor implements NestInterceptor {
       catchError(async (e) => {
         await qr.rollbackTransaction();
         await qr.release();
-
         throw new InternalServerErrorException(e.message);
       }),
       tap(async () => {

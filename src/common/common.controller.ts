@@ -1,27 +1,32 @@
 import {
+  Body,
   Controller,
+  Delete,
   Post,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { Express } from 'express';
-
-// TODO: Express 타입이 자꾸 사라지는 버그가 있어 임시 선언
-let a: Express;
+import { CommonService } from './common.service';
+import { DeleteImageDTO } from './dto/delete-image.dto';
 
 @ApiTags('Common')
 @Controller('common')
 export class CommonController {
-  constructor() {}
+  constructor(private readonly commonService: CommonService) {}
 
   @Post('image')
   @UseInterceptors(FileInterceptor('image'))
   @ApiConsumes()
-  postImage(@UploadedFile() file: Express.Multer.File) {
+  postImageAsTemp(@UploadedFile() file: Express.Multer.File) {
     return {
       filename: file.filename,
     };
+  }
+
+  @Delete('image')
+  async deleteImage(@Body() body: DeleteImageDTO) {
+    return await this.commonService.deleteImage(body);
   }
 }

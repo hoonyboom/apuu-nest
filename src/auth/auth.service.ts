@@ -5,11 +5,12 @@ import {
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
+  forwardRef,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bycrypt from 'bcrypt';
-import { CookieOptions, Request, Response } from 'express';
+import { CookieOptions, Request } from 'express';
 import * as nodemailer from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
 import { ENV } from 'src/common/const/env.const';
@@ -34,6 +35,7 @@ type EmailOptions = {
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
+    @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
     private readonly configService: ConfigService,
     @Inject(CACHE_MANAGER)
@@ -114,12 +116,12 @@ export class AuthService {
       xsrfToken: this.signToken(user, 'XSRF-TOKEN'),
     };
 
-    this.issueCookie(req.res, 'refreshToken', tokens.refreshToken);
-    this.issueCookie(req.res, 'accessToken', tokens.accessToken);
-    this.issueCookie(req.res, 'XSRF-TOKEN', tokens.xsrfToken, {
+    this.issueCookie(req, 'refreshToken', tokens.refreshToken);
+    this.issueCookie(req, 'accessToken', tokens.accessToken);
+    this.issueCookie(req, 'XSRF-TOKEN', tokens.xsrfToken, {
       httpOnly: false,
     });
-    this.issueCookie(req.res, 'isTokenAlive', true, {
+    this.issueCookie(req, 'isTokenAlive', true, {
       httpOnly: false,
     });
   }
@@ -153,18 +155,23 @@ export class AuthService {
   }
 
   async registerWithEmail({ email, password, nickname }: RegisterUserDTO) {
-    const hash = await bycrypt.hash(
-      password,
-      parseInt(this.configService.get<string>(ENV.SALT_ROUNDS_KEY)),
-    );
-
-    const { data: newUser } = await this.usersService.createUser({
+    const hash = await this.hashPassword(password);
+    const newUser = await this.usersService.createUser({
       email,
       nickname,
       password: hash,
     });
 
     return newUser;
+  }
+
+  async hashPassword(password: string) {
+    const hash = await bycrypt.hash(
+      password,
+      parseInt(this.configService.get<string>(ENV.SALT_ROUNDS_KEY)),
+    );
+
+    return hash;
   }
 
   extractTokenFromHeader(header: string) {
@@ -175,7 +182,9 @@ export class AuthService {
       splitToken.length !== 2 ||
       (prefix !== 'Basic' && prefix !== 'Bearer')
     ) {
-      throw new UnauthorizedException('토큰이 올바르지 않습니다');
+      throw new UnauthorizedException(
+        '올바르지 않은 토큰입니다. 헤더로부터 추출할 수 없습니다',
+      );
     }
 
     return token;
@@ -186,7 +195,9 @@ export class AuthService {
     const splitToken = decoded.split(':');
 
     if (splitToken.length !== 2) {
-      throw new UnauthorizedException('토큰이 올바르지 않습니다');
+      throw new UnauthorizedException(
+        '올바르지 않은 토큰입니다. 디코딩할 수 없습니다',
+      );
     }
 
     const [email, password] = splitToken;
@@ -200,7 +211,9 @@ export class AuthService {
         secret: this.configService.get<string>(ENV.JWT_SECRET_KEY),
       });
     } catch (err) {
-      throw new UnauthorizedException('토큰이 올바르지 않습니다');
+      throw new UnauthorizedException(
+        '올바르지 않은 토큰입니다. 검증할 수 없습니다',
+      );
     }
   }
 
@@ -231,18 +244,18 @@ export class AuthService {
   ) {
     const refreshToken = req.cookies['refreshToken'];
     const newToken = await this.rotateToken(refreshToken, requestedToken);
-    this.issueCookie(req.res, requestedToken, newToken, options);
+    this.issueCookie(req, requestedToken, newToken, options);
 
     return { success: true, message: `${requestedToken} 재발급 성공` };
   }
 
   issueCookie(
-    res: Response,
+    req: Request,
     name: jwtPayload['type'] | 'isTokenAlive',
     value: string | boolean | number,
     options?: CookieOptions,
   ) {
-    res.cookie(name, value, {
+    req.res.cookie(name, value, {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
@@ -254,7 +267,7 @@ export class AuthService {
     });
   }
 
-  clearAllCookies(res: Response) {
+  clearAllCookies(req: Request) {
     const allCookies = [
       'XSRF-TOKEN',
       'accessToken',
@@ -262,8 +275,7 @@ export class AuthService {
       'refreshToken',
     ] satisfies (jwtPayload['type'] | 'isTokenAlive')[];
 
-    allCookies.forEach((cookie) => res.clearCookie(cookie));
-
+    allCookies.forEach((cookie) => req.res.clearCookie(cookie));
     return { success: true, message: '로그아웃 성공' };
   }
 }

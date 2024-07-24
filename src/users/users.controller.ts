@@ -12,20 +12,26 @@ import {
   Query,
   UseInterceptors,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { CommonService } from 'src/common/common.service';
 import { QR } from 'src/common/decorator/query-runner.decorator';
 import { BasePaginateDTO } from 'src/common/dto/base-pagination.dto';
-import { QueryRunnerInterceotor } from 'src/common/interceptor/query-runner.interceptor';
+import { ImageModelType } from 'src/common/entities/image.entity';
+import { QueryRunnerInterceptor } from 'src/common/interceptor/query-runner.interceptor';
 import { QueryRunner } from 'typeorm';
 import { Roles } from './const/roles.const';
 import { RBAC } from './decorator/roles.decorator';
 import { User } from './decorator/user.decorator';
+import { UpdateProfileDTO } from './dto/update-profile.dto';
 import { UsersService } from './users.service';
-import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly commonService: CommonService,
+  ) {}
 
   // @Get()
   // async getUser(@Body('authorId') authorId: number) {
@@ -44,8 +50,30 @@ export class UsersController {
     return await this.usersService.paginateUsers(dto);
   }
 
+  @Patch()
+  @UseInterceptors(QueryRunnerInterceptor)
+  async updateUser(
+    @User('id') userId: number,
+    @Body() body: UpdateProfileDTO,
+    @QR() qr: QueryRunner,
+  ) {
+    const user = await this.usersService.updateUserProfile(userId, body, qr);
+    if (body.image) {
+      await this.commonService.createImage(
+        {
+          type: ImageModelType.USER_IMAGE,
+          src: body.image,
+          user,
+        },
+        qr,
+      );
+    }
+
+    return this.usersService.getUser(userId);
+  }
+
   @Delete()
-  async deleteUser(@Body('authorId') authorId: number) {
+  async deleteUser(@User('id') authorId: number) {
     return await this.usersService.deleteUser(authorId);
   }
 
@@ -59,7 +87,7 @@ export class UsersController {
   }
 
   @Post('follow/:fid')
-  @UseInterceptors(QueryRunnerInterceotor)
+  @UseInterceptors(QueryRunnerInterceptor)
   async postFollow(
     @User('id') userId: number,
     @Param('fid', ParseIntPipe) followeeId: number,
@@ -68,7 +96,7 @@ export class UsersController {
   }
 
   @Patch('follow/:fid/confirm')
-  @UseInterceptors(QueryRunnerInterceotor)
+  @UseInterceptors(QueryRunnerInterceptor)
   async patchFollowConfirm(
     @User('id') userId: number,
     @Param('fid', ParseIntPipe) followerId: number,
@@ -86,7 +114,7 @@ export class UsersController {
   }
 
   @Delete('follow/:fid')
-  @UseInterceptors(QueryRunnerInterceotor)
+  @UseInterceptors(QueryRunnerInterceptor)
   async deleteFollow(
     @User('id') userId: number,
     @Param('fid', ParseIntPipe) followeeId: number,
@@ -100,6 +128,6 @@ export class UsersController {
       qr,
     );
 
-    return;
+    return true;
   }
 }

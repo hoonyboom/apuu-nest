@@ -1,18 +1,35 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { promises } from 'fs';
+import { basename, join } from 'path';
 import { ENV } from 'src/common/const/env.const';
 import {
   FILTER_MAPPER,
   FilterMapperKeys,
 } from 'src/common/const/filter-mapper.const';
+import { CreatePostImageDTO } from 'src/posts/comments/dto/create-post-image.dto';
+import { CreateUserImageDTO } from 'src/users/dto/create-user-image.dto';
 import {
   FindManyOptions,
   FindOptionsOrder,
   FindOptionsWhere,
+  QueryRunner,
   Repository,
 } from 'typeorm';
+import {
+  POSTS_IMAGE_PATH,
+  TEMP_FOLDER_PATH,
+  USERS_IMAGE_PATH,
+} from './const/path.const';
 import { BasePaginateDTO } from './dto/base-pagination.dto';
+import { DeleteImageDTO } from './dto/delete-image.dto';
 import { BaseModel } from './entities/base.entity';
+import { ImageModelType, ImagesModel } from './entities/image.entity';
 
 type PaginateParams<T> = {
   dto: BasePaginateDTO;
@@ -23,9 +40,13 @@ type PaginateParams<T> = {
 
 @Injectable()
 export class CommonService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    @InjectRepository(ImagesModel)
+    private readonly imageRepository: Repository<ImagesModel>,
+  ) {}
 
-  paginate<T extends BaseModel>({
+  public paginate<T extends BaseModel>({
     dto,
     repo,
     overrideFindOptions = {},
@@ -167,5 +188,55 @@ export class CommonService {
     }
 
     return options;
+  }
+
+  private getImageRepository(qr?: QueryRunner) {
+    return qr ? qr.manager.getRepository(ImagesModel) : this.imageRepository;
+  }
+
+  async createImage(
+    dto: CreateUserImageDTO | CreatePostImageDTO,
+    qr?: QueryRunner,
+  ): Promise<ImagesModel> {
+    const repo = this.getImageRepository(qr);
+    const tempFilePath = join(TEMP_FOLDER_PATH, dto.src);
+    const path =
+      dto.type === ImageModelType.POST_IMAGE
+        ? POSTS_IMAGE_PATH
+        : USERS_IMAGE_PATH;
+
+    try {
+      await promises.access(tempFilePath);
+    } catch (error) {
+      throw new BadRequestException('파일을 찾을 수 없습니다');
+    }
+
+    const filename = basename(tempFilePath);
+    const newPath = join(path, filename);
+
+    const result = await repo.save(dto);
+
+    await promises.rename(tempFilePath, newPath);
+
+    return result;
+  }
+
+  async deleteImage({ src, type }: DeleteImageDTO, qr?: QueryRunner) {
+    const repo = this.getImageRepository(qr);
+    const imageExisting = await repo.exists({ where: { src } });
+
+    if (imageExisting) {
+      await repo.delete(src);
+    } else {
+      throw new NotFoundException('존재하지 않는 이미지입니다');
+    }
+
+    const path = type === 'post' ? POSTS_IMAGE_PATH : USERS_IMAGE_PATH;
+    
+    // 스토리지에서 삭제
+    const filepath = join(path, src);
+    await promises.rm(filepath);
+
+    return { success: true };
   }
 }

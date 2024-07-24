@@ -1,36 +1,58 @@
-import { IsNumber, IsString } from 'class-validator';
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsDate,
+  IsEnum,
+  IsNumber,
+  IsString,
+} from 'class-validator';
 import { BaseModel } from 'src/common/entities/base.entity';
 import { ImagesModel } from 'src/common/entities/image.entity';
 import { StringValidationMessage } from 'src/common/vaildation-message/string-validation.message';
+import { UsersModel } from 'src/users/entity/users.entity';
 import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { CommentsModel } from '../comments/entity/comment.entity';
-import { UsersModel } from 'src/users/entity/users.entity';
+import {
+  PostGoalType,
+  PostLevelType,
+  PostMethodType,
+  PostSortType,
+  PostStyleType,
+} from './posts.types';
 
 @Entity()
 export class PostsModel extends BaseModel {
   @ManyToOne(() => UsersModel, (user) => user.posts, {
-    nullable: false,
-    onDelete: 'CASCADE',
     eager: true,
+    nullable: false,
+    onDelete: 'CASCADE', // author가 지워지면 포스트도 삭제
   })
   author: UsersModel;
 
-  @OneToMany(() => ImagesModel, (image) => image.post)
+  @OneToMany(() => ImagesModel, (image) => image.post, {
+    eager: true,
+    cascade: true, // 포스트가 지워지면 images도 삭제
+  })
   images: ImagesModel[];
 
   @OneToMany(() => CommentsModel, (comment) => comment.post)
   comments: CommentsModel[];
 
-  /**
-   * TODO: 과연 필요한가?
-   * 1. 댓글 수가 적다면 그냥 comments.length로 처리하는 방법
-   * 2.
-   */
   @Column({
     default: 0,
   })
   @IsNumber()
   commentsCount: number;
+
+  @Column({
+    default: 0,
+  })
+  likeCount: number;
+
+  @Column({
+    default: 0,
+  })
+  commentCount: number;
 
   @Column()
   @IsString({
@@ -45,12 +67,46 @@ export class PostsModel extends BaseModel {
   content: string;
 
   @Column({
-    default: 0,
+    type: 'enum',
+    enum: PostSortType,
   })
-  likeCount: number;
+  @IsEnum(PostSortType)
+  sort: PostSortType;
 
   @Column({
-    default: 0,
+    type: 'enum',
+    enum: PostMethodType,
   })
-  commentCount: number;
+  @IsEnum(PostMethodType)
+  method: PostMethodType;
+
+  @Column()
+  @IsNumber()
+  size: number;
+
+  @Column()
+  @IsString()
+  period: string;
+
+  @Column()
+  @IsDate()
+  deadline: Date;
+
+  @Column('simple-array')
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsEnum(PostLevelType, { each: true })
+  level: PostLevelType;
+
+  @Column('simple-array')
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsEnum(PostGoalType, { each: true })
+  goal: PostGoalType;
+
+  @Column('simple-array')
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsEnum(PostStyleType, { each: true })
+  style: PostStyleType;
 }

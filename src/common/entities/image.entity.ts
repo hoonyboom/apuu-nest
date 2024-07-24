@@ -1,8 +1,9 @@
 import { Transform } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { join } from 'path';
 import { PostsModel } from 'src/posts/entity/posts.entity';
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { UsersModel } from 'src/users/entity/users.entity';
+import { Column, Entity, ManyToOne, OneToOne } from 'typeorm';
 import {
   POST_PUBLIC_IMAGE_PATH,
   USER_PUBLIC_IMAGE_PATH,
@@ -19,7 +20,7 @@ export class ImagesModel extends BaseModel {
   @Column({
     default: 0,
   })
-  @IsInt()
+  @IsNumber()
   @IsOptional()
   order?: number;
 
@@ -31,7 +32,9 @@ export class ImagesModel extends BaseModel {
   @IsString()
   type: ImageModelType;
 
-  @Column()
+  @Column({
+    unique: true,
+  })
   @IsString()
   @Transform(({ value, obj }) => {
     switch (obj.type) {
@@ -43,12 +46,13 @@ export class ImagesModel extends BaseModel {
         return value;
     }
   })
-  path: string;
+  src: string;
 
-  @ManyToOne(() => PostsModel, (post) => post.images, {
-    onDelete: 'CASCADE',
-    eager: true,
-    nullable: true,
-  })
+  @IsOptional()
+  @ManyToOne(() => PostsModel, (post) => post.images)
   post?: PostsModel;
+
+  @IsOptional()
+  @OneToOne(() => UsersModel, (user) => user.image)
+  user?: UsersModel;
 }

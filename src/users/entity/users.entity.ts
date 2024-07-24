@@ -1,14 +1,23 @@
 import { Exclude } from 'class-transformer';
-import { IsEmail, IsString, Length } from 'class-validator';
+import { IsEmail, IsOptional, IsString, Length } from 'class-validator';
 import { ChatsModel } from 'src/chats/entity/chats.entity';
 import { MessagesModel } from 'src/chats/messages/entities/messages.entity';
 import { BaseModel } from 'src/common/entities/base.entity';
+import { ImagesModel } from 'src/common/entities/image.entity';
 import { EmailValidationMessage } from 'src/common/vaildation-message/email-validation.message';
 import { LengthValidationMessage } from 'src/common/vaildation-message/length-validation.message';
 import { StringValidationMessage } from 'src/common/vaildation-message/string-validation.message';
 import { CommentsModel } from 'src/posts/comments/entity/comment.entity';
 import { PostsModel } from 'src/posts/entity/posts.entity';
-import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 import { Roles } from '../const/roles.const';
 import { UsersFollowersModel } from './user-followers.entity';
 
@@ -33,6 +42,14 @@ export class UsersModel extends BaseModel {
 
   @OneToMany(() => UsersFollowersModel, (ufm) => ufm.followee)
   followees: UsersFollowersModel[];
+
+  @IsOptional()
+  @OneToOne(() => ImagesModel, (image) => image.user, {
+    cascade: true,
+    eager: true,
+  })
+  @JoinColumn()
+  image?: ImagesModel;
 
   @Column({
     default: 0,
@@ -82,7 +99,7 @@ export class UsersModel extends BaseModel {
   @Column({
     type: 'enum',
     enum: Roles,
-    default: Roles.USER,
+    default: Roles.FREETIER,
   })
   role: Roles;
 }

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   CanActivate,
   ExecutionContext,
   Injectable,
@@ -25,8 +26,8 @@ export class BaseTokenGuard implements CanActivate {
     };
 
     const { referer, host } = req.headers;
-    if (referer && !referer.includes(host)) {
-      throw new UnauthorizedException('referer가 다릅니다.');
+    if (referer && !referer.includes(host) && !host.includes('localhost')) {
+      throw new BadRequestException('잘못된 요청입니다');
     }
 
     if (isPublic) {
@@ -54,7 +55,7 @@ export class AccessTokenGuard extends BaseTokenGuard {
       user: UsersModel;
       isRoutePublic?: boolean;
       headers: {
-        'XSRF-TOKEN': string;
+        'xsrf-token': string;
       };
     };
 
@@ -65,7 +66,7 @@ export class AccessTokenGuard extends BaseTokenGuard {
 
     // GET 요청이 아닌 경우에만 XSRF 토큰을 검증합니다.
     if (req.method !== 'GET') {
-      const xsrfToken = req.headers['XSRF-TOKEN'];
+      const xsrfToken = req.headers['xsrf-token'];
       await this.authService.verifyToken(xsrfToken);
     }
 
@@ -90,7 +91,8 @@ export class RefreshTokenGuard extends BaseTokenGuard {
 
     const req = ctx.switchToHttp().getRequest() satisfies Request;
 
-    if (!req.cookies['refreshToken']) {
+    const refreshToken = req.cookies['refreshToken'];
+    if (!refreshToken) {
       throw new UnauthorizedException('refreshToken이 없습니다.');
     }
 
