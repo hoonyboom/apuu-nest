@@ -16,7 +16,7 @@ import { ImagesModel } from './entities/image.entity';
         fileSize: 1024 * 1024 * 2,
       },
       fileFilter: (req, file, cb) => {
-        const ext = extname(file.originalname);
+        const ext = extname(file.originalname).toLowerCase();
         if (
           ext !== '.jpg' &&
           ext !== '.jpeg' &&

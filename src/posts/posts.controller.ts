@@ -51,10 +51,7 @@ export class PostsController {
     @Body() body: CreatePostDTO,
     @QR() qr: QueryRunner,
   ) {
-    console.log({ body });
     const post = await this.postsService.createPost(authorId, body, qr);
-    console.log({ post });
-    await this.postsService.insertPostImages(body, post, qr);
     return await this.postsService.getPostbyId(post.id, qr);
   }
 
@@ -67,7 +64,6 @@ export class PostsController {
     @QR() qr: QueryRunner,
   ) {
     const post = await this.postsService.updatePost(postId, body, qr);
-    await this.postsService.insertPostImages(body, post, qr);
     return await this.postsService.getPostbyId(postId, qr);
   }
 

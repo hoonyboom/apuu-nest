@@ -213,7 +213,6 @@ export class CommonService {
 
     const filename = basename(tempFilePath);
     const newPath = join(path, filename);
-
     const result = await repo.save(dto);
 
     await promises.rename(tempFilePath, newPath);
@@ -232,7 +231,7 @@ export class CommonService {
     }
 
     const path = type === 'post' ? POSTS_IMAGE_PATH : USERS_IMAGE_PATH;
-    
+
     // 스토리지에서 삭제
     const filepath = join(path, src);
     await promises.rm(filepath);

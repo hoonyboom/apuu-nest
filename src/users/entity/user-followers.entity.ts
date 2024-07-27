@@ -18,4 +18,3 @@ export class UsersFollowersModel extends BaseModel {
   @Column({ default: false })
   isConfirmed: boolean;
 }
-  

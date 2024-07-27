@@ -19,7 +19,7 @@ export class CommonController {
   @Post('image')
   @UseInterceptors(FileInterceptor('image'))
   @ApiConsumes()
-  postImageAsTemp(@UploadedFile() file: Express.Multer.File) {
+  postUploadImageAsTemp(@UploadedFile() file: Express.Multer.File) {
     return {
       filename: file.filename,
     };

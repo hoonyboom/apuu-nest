@@ -29,9 +29,19 @@ export class QueryRunnerInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       catchError(async (e) => {
-        await qr.rollbackTransaction();
-        await qr.release();
-        throw new InternalServerErrorException(e.message);
+        try {
+          await qr.rollbackTransaction();
+        } catch (rollbackError) {
+          // Log rollback error separately
+          console.error('Rollback Error:', rollbackError);
+        } finally {
+          await qr.release();
+        }
+        // Log the original error with additional context
+        console.error('Original Error:', e);
+        throw new InternalServerErrorException(
+          `Transaction failed: ${e.message}`,
+        );
       }),
       tap(async () => {
         await qr.commitTransaction();

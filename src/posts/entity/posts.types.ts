@@ -33,3 +33,11 @@ export enum PostGoalType {
   스트렝스 = '스트렝스',
   기타 = '기타',
 }
+
+export const PERIOD = [
+  '1주 미만',
+  '1주~1개월',
+  '1개월~3개월',
+  '3개월~6개월',
+  '장기',
+] as const;

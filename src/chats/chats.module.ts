@@ -15,7 +15,7 @@ import { MessagesService } from './messages/messages.service';
   imports: [
     TypeOrmModule.forFeature([ChatsModel, MessagesModel]),
     CommonModule,
-    AuthModule,  // Chat 게이트웨이에서 사용중
+    AuthModule, // Chat 게이트웨이에서 사용중
     UsersModule, // Chat 게이트웨이에서 사용중
   ],
   controllers: [ChatsController, MessagesController],

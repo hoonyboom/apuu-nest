@@ -2,7 +2,6 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { ClassSerializerInterceptor, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { redisStore } from 'cache-manager-redis-yet';
 import { ENV } from 'src/common/const/env.const';
@@ -15,7 +14,6 @@ import { ChatsModule } from './chats/chats.module';
 import { ChatsModel } from './chats/entity/chats.entity';
 import { MessagesModel } from './chats/messages/entities/messages.entity';
 import { CommonModule } from './common/common.module';
-import { PUBLIC_FOLDER_PATH } from './common/const/path.const';
 import { BaseModel } from './common/entities/base.entity';
 import { ImagesModel } from './common/entities/image.entity';
 import { CommentsModule } from './posts/comments/comments.module';
@@ -32,10 +30,10 @@ import { UsersModule } from './users/users.module';
       envFilePath: '.env',
       isGlobal: true,
     }),
-    ServeStaticModule.forRoot({
-      rootPath: PUBLIC_FOLDER_PATH,
-      serveRoot: '/public',
-    }),
+    // ServeStaticModule.forRoot({
+    //   rootPath: PUBLIC_FOLDER_PATH,
+    //   serveRoot: '/public',
+    // }),
     CacheModule.registerAsync<RegistrationOptions>({
       isGlobal: true,
       imports: [ConfigModule],
