@@ -23,6 +23,8 @@ import { PostsModule } from './posts/posts.module';
 import { UsersFollowersModel } from './users/entity/user-followers.entity';
 import { UsersModel } from './users/entity/users.entity';
 import { UsersModule } from './users/users.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
   imports: [
@@ -30,10 +32,7 @@ import { UsersModule } from './users/users.module';
       envFilePath: '.env',
       isGlobal: true,
     }),
-    // ServeStaticModule.forRoot({
-    //   rootPath: PUBLIC_FOLDER_PATH,
-    //   serveRoot: '/public',
-    // }),
+    ScheduleModule.forRoot(),
     CacheModule.registerAsync<RegistrationOptions>({
       isGlobal: true,
       imports: [ConfigModule],
@@ -83,6 +82,7 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     ChatsModule,
     CommentsModule,
+    TasksModule,
   ],
   controllers: [AppController],
   providers: [
