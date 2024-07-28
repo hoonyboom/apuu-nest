@@ -35,7 +35,6 @@ jobs:
           PROTOCOL: ${{ secrets.PROTOCOL }}
           HOST: ${{ secrets.HOST }}
           PORT: ${{ secrets.PORT }}
-          NODE_ENV: ${{ secrets.NODE_ENV }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           SALT_ROUNDS: ${{ secrets.SALT_ROUNDS }}
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
@@ -53,7 +52,6 @@ jobs:
           -e DB_NAME=$DB_NAME
           -e PROTOCOL=$PROTOCOL
           -e HOST=$HOST
-          -e NODE_ENV=$NODE_ENV
           -e JWT_SECRET=$JWT_SECRET
           -e SALT_ROUNDS=$SALT_ROUNDS
           -e EMAIL_USER="$EMAIL_USER"

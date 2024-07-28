@@ -10,8 +10,7 @@ RUN npm run build
 FROM node:21-alpine
 WORKDIR /usr/src/app
 ARG PORT
-ENV NODE_ENV \
-  DB_HOST \
+ENV DB_HOST \
   DB_PORT \
   DB_USER \
   DB_PASS \
@@ -20,9 +19,9 @@ ENV NODE_ENV \
   HOST \
   PORT \
   JWT_SECRET \
-  SALT_ROUNDS \
-  CA_CERT
+  SALT_ROUNDS
 COPY --from=build /usr/src/app/dist ./dist
+COPY --from=build /usr/src/app/public ./public
 COPY --from=build /usr/src/app/node_modules ./node_modules
 COPY package*.json ./
 EXPOSE ${PORT}
