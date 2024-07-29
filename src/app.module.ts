@@ -44,6 +44,7 @@ import { TasksModule } from './tasks/tasks.module';
             host: configService.get<string>(ENV.REDIS_HOST_KEY),
             port: parseInt(configService.get<string>(ENV.REDIS_PORT_KEY)),
           },
+          password: configService.get<string>(ENV.REDIS_PASS_KEY),
         }),
       }),
     }),
