@@ -22,10 +22,8 @@ jobs:
       - name: Pull Docker image
         run: sudo docker pull hyezoprk/apuu-nest:latest
 
-      - name: Clean up Old docker container and images
-        run: |
-          sudo docker rm -f apuu-nest-container || true
-          sudo docker image prune -af
+      - name: Clean up Old docker container
+        run: sudo docker rm -f apuu-nest-container || true
 
       - name: Run Docker Container
         env:
@@ -68,3 +66,6 @@ jobs:
 
       - name: Check Network Connection
         run: sudo docker network connect server apuu-nest-container || true
+
+      - name: Clean up Old docker images
+        run: sudo docker image prune -af || true
