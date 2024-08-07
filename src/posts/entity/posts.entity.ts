@@ -13,6 +13,7 @@ import { UsersModel } from 'src/users/entity/users.entity';
 import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { CommentsModel } from '../comments/entity/comment.entity';
 import {
+  AREA,
   PERIOD,
   PostGoalType,
   PostLevelType,
@@ -91,6 +92,13 @@ export class PostsModel extends BaseModel {
   })
   @IsEnum(PERIOD)
   period: typeof PERIOD;
+
+  @Column({
+    type: 'enum',
+    enum: AREA,
+  })
+  @IsEnum(AREA)
+  area: typeof AREA;
 
   @Column()
   @IsDate()

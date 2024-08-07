@@ -13,6 +13,7 @@ export class CreatePostDTO extends PickType(PostsModel, [
   'period',
   'sort',
   'style',
+  'area',
 ]) {
   @IsString({
     each: true,

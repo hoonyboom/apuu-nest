@@ -13,7 +13,6 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { IsPublic } from 'src/auth/decorator/is-public.decorator';
-import { CommonService } from 'src/common/common.service';
 import { QR } from 'src/common/decorator/query-runner.decorator';
 import { QueryRunnerInterceptor } from 'src/common/interceptor/query-runner.interceptor';
 import { User } from 'src/users/decorator/user.decorator';
@@ -27,10 +26,7 @@ import { PostsService } from './posts.service';
 @ApiTags('Posts')
 @Controller('posts')
 export class PostsController {
-  constructor(
-    private readonly postsService: PostsService,
-    private readonly commonService: CommonService,
-  ) {}
+  constructor(private readonly postsService: PostsService) {}
 
   @Get()
   @IsPublic()

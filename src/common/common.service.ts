@@ -118,11 +118,10 @@ export class CommonService {
         }
       }
 
-      let key;
       if (dto.order__createdAt === 'ASC') {
-        key = 'where__id__more_than';
+        var key = 'where__id__more_than';
       } else if (dto.order__createdAt === 'DESC') {
-        key = 'where__id__less_than';
+        var key = 'where__id__less_than';
       }
 
       nextUrl.searchParams.append(key, lastItem?.toString());
