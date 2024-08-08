@@ -58,7 +58,7 @@ import { UsersModule } from './users/users.module';
         username: configService.get<string>(ENV.DB_USER_KEY),
         password: configService.get<string>(ENV.DB_PASS_KEY),
         database: configService.get<string>(ENV.DB_NAME_KEY),
-        synchronize: process.env.NODE_ENV_KEY === 'development' ? true : false,
+        synchronize: process.env.NODE_ENV === 'development' ? true : false,
 
         // TODO: 신규 엔티티 잊지 말고 등록
         autoLoadEntities: true,
