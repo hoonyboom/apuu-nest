@@ -11,6 +11,7 @@ import { BasePaginateDTO } from './common/dto/base-pagination.dto';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.setGlobalPrefix('api');
   app.enableCors({
     origin: 'http://localhost:3001',
     credentials: true,
@@ -21,7 +22,6 @@ async function bootstrap() {
   });
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe(VALIDATION_CONFIG));
-  app.setGlobalPrefix('api');
   // app.useGlobalFilters(new HttpExceptionFilter());
 
   const options = new DocumentBuilder()
