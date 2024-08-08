@@ -11,11 +11,11 @@ import { BasePaginateDTO } from './common/dto/base-pagination.dto';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  app.setGlobalPrefix('api');
   app.enableCors({
     origin: 'http://localhost:3001',
     credentials: true,
   });
+  app.setGlobalPrefix('api');
 
   app.useStaticAssets(PUBLIC_FOLDER_PATH, {
     prefix: '/public',
