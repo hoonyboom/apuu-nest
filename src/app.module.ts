@@ -2,6 +2,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { ClassSerializerInterceptor, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { redisStore } from 'cache-manager-redis-yet';
 import { ENV } from 'src/common/const/env.const';
@@ -20,11 +21,10 @@ import { CommentsModule } from './posts/comments/comments.module';
 import { CommentsModel } from './posts/comments/entity/comment.entity';
 import { PostsModel } from './posts/entity/posts.entity';
 import { PostsModule } from './posts/posts.module';
+import { TasksModule } from './tasks/tasks.module';
 import { UsersFollowersModel } from './users/entity/user-followers.entity';
 import { UsersModel } from './users/entity/users.entity';
 import { UsersModule } from './users/users.module';
-import { ScheduleModule } from '@nestjs/schedule';
-import { TasksModule } from './tasks/tasks.module';
 
 @Module({
   imports: [
@@ -58,10 +58,7 @@ import { TasksModule } from './tasks/tasks.module';
         username: configService.get<string>(ENV.DB_USER_KEY),
         password: configService.get<string>(ENV.DB_PASS_KEY),
         database: configService.get<string>(ENV.DB_NAME_KEY),
-        synchronize:
-          configService.get<string>(ENV.NODE_ENV_KEY) === 'development'
-            ? true
-            : false,
+        synchronize: process.env.NODE_ENV_KEY === 'development' ? true : false,
 
         // TODO: 신규 엔티티 잊지 말고 등록
         autoLoadEntities: true,
