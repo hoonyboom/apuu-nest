@@ -105,7 +105,7 @@ export class CommonService {
       results.length === dto.take && results.length > 0
         ? results.at(-1).id
         : null;
-    const nextUrl = new URL(`${protocol}://${host}:${port}/${path}`);
+    const nextUrl = new URL(`${protocol}://${host}:${port}/api/${path}`);
 
     {
       for (const [key, value] of Object.entries(dto)) {
