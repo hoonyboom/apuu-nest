@@ -21,6 +21,7 @@ async function bootstrap() {
   });
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe(VALIDATION_CONFIG));
+  app.setGlobalPrefix('api');
   // app.useGlobalFilters(new HttpExceptionFilter());
 
   const options = new DocumentBuilder()
