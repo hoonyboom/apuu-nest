@@ -16,6 +16,7 @@ import Mail from 'nodemailer/lib/mailer';
 import { ENV } from 'src/common/const/env.const';
 import { UsersModel } from 'src/users/entity/users.entity';
 import { UsersService } from 'src/users/users.service';
+import { MAIL_TEMPLATE } from './const/mail.template';
 import { RegisterUserDTO } from './dto/register-user.dto';
 
 export type jwtPayload = {
@@ -63,8 +64,8 @@ export class AuthService {
     const verifyCode = this.generateRandomCode();
     const mailOptions = {
       to: email,
-      subject: '이메일 인증 코드',
-      html: `인증 코드: ${verifyCode}`,
+      subject: '이메일 주소 확인',
+      html: MAIL_TEMPLATE(verifyCode),
     } satisfies EmailOptions;
 
     try {
