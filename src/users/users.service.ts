@@ -10,7 +10,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { CommonService } from 'src/common/common.service';
 import { BasePaginateDTO } from 'src/common/dto/base-pagination.dto';
 import { QueryRunner, Repository } from 'typeorm';
-import { Roles } from './const/roles.const';
+import { Roles } from './const/enum.const';
 import { UpdateProfileDTO } from './dto/update-profile.dto';
 import { UsersFollowersModel } from './entity/user-followers.entity';
 import { UsersModel } from './entity/users.entity';
@@ -51,7 +51,9 @@ export class UsersService {
     });
   }
 
-  async createUser(body: Pick<UsersModel, 'email' | 'password' | 'nickname'>) {
+  async createUser(
+    body: Pick<UsersModel, 'email' | 'password' | 'nickname' | 'provider'>,
+  ) {
     await this.checkNicknameExists(body.nickname);
     await this.checkEmailExists(body.email);
 

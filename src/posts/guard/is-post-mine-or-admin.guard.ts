@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { PostsService } from 'src/posts/posts.service';
-import { Roles } from 'src/users/const/roles.const';
+import { Roles } from 'src/users/const/enum.const';
 import { UsersModel } from 'src/users/entity/users.entity';
 
 @Injectable()

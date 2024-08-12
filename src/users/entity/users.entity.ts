@@ -18,7 +18,7 @@ import {
   OneToMany,
   OneToOne,
 } from 'typeorm';
-import { Roles } from '../const/roles.const';
+import { Providers, Roles } from '../const/enum.const';
 import { UsersFollowersModel } from './user-followers.entity';
 
 @Entity()
@@ -84,7 +84,8 @@ export class UsersModel extends BaseModel {
   })
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
+  @IsOptional()
   @IsString({
     message: StringValidationMessage,
   })
@@ -102,4 +103,11 @@ export class UsersModel extends BaseModel {
     default: Roles.FREETIER,
   })
   role: Roles;
+
+  @Column({
+    type: 'enum',
+    enum: Providers,
+    default: Providers.EMAIL,
+  })
+  provider?: Providers;
 }

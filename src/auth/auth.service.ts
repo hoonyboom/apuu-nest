@@ -11,9 +11,12 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bycrypt from 'bcrypt';
 import { CookieOptions, Request } from 'express';
+import { promises as fs } from 'fs';
 import * as nodemailer from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
 import { ENV } from 'src/common/const/env.const';
+import { PUBLIC_FOLDER_PATH } from 'src/common/const/path.const';
+import { Providers } from 'src/users/const/enum.const';
 import { UsersModel } from 'src/users/entity/users.entity';
 import { UsersService } from 'src/users/users.service';
 import { MAIL_TEMPLATE } from './const/mail.template';
@@ -26,11 +29,6 @@ export type jwtPayload = {
 };
 
 type TokenType = 'Bearer' | 'Basic';
-type EmailOptions = {
-  to: string;
-  subject: string;
-  html: string;
-};
 
 @Injectable()
 export class AuthService {
@@ -62,11 +60,20 @@ export class AuthService {
   async sendVeryficationCode(email: string) {
     const transporter = this.createTransporter();
     const verifyCode = this.generateRandomCode();
+    const logoImage = await fs.readFile(PUBLIC_FOLDER_PATH + '/logo.png');
     const mailOptions = {
       to: email,
       subject: '이메일 주소 확인',
       html: MAIL_TEMPLATE(verifyCode),
-    } satisfies EmailOptions;
+      attachments: [
+        {
+          filename: 'logo.png',
+          content: logoImage,
+          encoding: 'base64',
+          cid: 'logo@apuu',
+        },
+      ],
+    } satisfies Mail.Options;
 
     try {
       await this.cacheManager.set(email, verifyCode, 120000);
@@ -95,7 +102,7 @@ export class AuthService {
   }
 
   signToken(
-    { email, id }: Pick<UsersModel, 'email' | 'id'>,
+    { email, id }: Pick<UsersModel, 'id' | 'email'>,
     requestTokenType: jwtPayload['type'],
   ) {
     const payload = {
@@ -278,5 +285,32 @@ export class AuthService {
 
     allCookies.forEach((cookie) => req.res.clearCookie(cookie));
     return { success: true, message: '로그아웃 성공' };
+  }
+
+  async kakaoLogin(
+    req: Request & { user: { nickname: string; email: string } },
+  ) {
+    const user = await this.validateKakaoUser(req.user);
+    this.loginUser(req, user);
+  }
+
+  async validateKakaoUser({
+    nickname,
+    email,
+  }: {
+    nickname: string;
+    email: string;
+  }) {
+    const user = await this.usersService.getUserByEmail(email);
+    if (!user) {
+      this.usersService.createUser({
+        email,
+        nickname,
+        password: null,
+        provider: Providers.KAKAO,
+      });
+    }
+
+    return user;
   }
 }

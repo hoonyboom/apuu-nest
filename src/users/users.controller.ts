@@ -19,7 +19,7 @@ import { BasePaginateDTO } from 'src/common/dto/base-pagination.dto';
 import { ImageModelType } from 'src/common/entities/image.entity';
 import { QueryRunnerInterceptor } from 'src/common/interceptor/query-runner.interceptor';
 import { QueryRunner } from 'typeorm';
-import { Roles } from './const/roles.const';
+import { Roles } from './const/enum.const';
 import { RBAC } from './decorator/roles.decorator';
 import { User } from './decorator/user.decorator';
 import { UpdateProfileDTO } from './dto/update-profile.dto';

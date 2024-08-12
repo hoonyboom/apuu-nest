@@ -1,11 +1,14 @@
 import {
   Body,
   Controller,
+  Get,
+  HttpCode,
   Post,
   Req,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBasicAuth,
   ApiCookieAuth,
@@ -101,5 +104,14 @@ export class AuthController {
   @ApiCookieAuth()
   postLogout(@Req() req: Request) {
     return this.authService.clearAllCookies(req);
+  }
+
+  @Get('login/kakao')
+  @UseGuards(AuthGuard('kakao'))
+  @HttpCode(301)
+  async kakaoLogin(
+    @Req() req: Request & { user: { nickname: string; email: string } },
+  ) {
+    return this.authService.kakaoLogin(req);
   }
 }
