@@ -21,7 +21,7 @@ async function bootstrap() {
     prefix: '/public',
   });
   app.use(cookieParser());
-  
+
   app.useGlobalPipes(new ValidationPipe(VALIDATION_CONFIG));
   // app.useGlobalFilters(new HttpExceptionFilter());
 

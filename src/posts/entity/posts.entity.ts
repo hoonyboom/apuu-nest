@@ -27,6 +27,7 @@ export class PostsModel extends BaseModel {
   @ManyToOne(() => UsersModel, (user) => user.posts, {
     eager: true,
     nullable: false,
+    onUpdate: 'CASCADE',
     onDelete: 'CASCADE', // author가 지워지면 포스트도 삭제
   })
   author: UsersModel;

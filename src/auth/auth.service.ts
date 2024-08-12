@@ -292,6 +292,7 @@ export class AuthService {
   ) {
     const user = await this.validateKakaoUser(req.user);
     this.loginUser(req, user);
+    return user;
   }
 
   async validateKakaoUser({
@@ -301,16 +302,15 @@ export class AuthService {
     nickname: string;
     email: string;
   }) {
-    const user = await this.usersService.getUserByEmail(email);
-    if (!user) {
-      this.usersService.createUser({
+    try {
+      return await this.usersService.getUserByEmail(email);
+    } catch (error) {
+      return await this.usersService.createUser({
         email,
         nickname,
         password: null,
         provider: Providers.KAKAO,
       });
     }
-
-    return user;
   }
 }

@@ -89,6 +89,9 @@ importers:
       passport-kakao:
         specifier: ^1.0.1
         version: 1.0.1
+      passport-naver:
+        specifier: ^1.0.6
+        version: 1.0.6
       pg:
         specifier: ^8.11.5
         version: 8.11.5
@@ -129,6 +132,9 @@ importers:
       '@types/passport-kakao':
         specifier: ^1.0.3
         version: 1.0.3
+      '@types/passport-naver':
+        specifier: ^1.0.4
+        version: 1.0.4
       '@types/supertest':
         specifier: ^6.0.0
         version: 6.0.2
@@ -868,6 +874,9 @@ packages:
 
   '@types/passport-kakao@1.0.3':
     resolution: {integrity: sha512-McK5kpeiOptvjIPkiA/QS3k82//z5JM7Y3yBLMDvEA0QMMhFMcWUHhyebL1Qy+0i0n8jS+Oe4U6xAvkU22SXXA==}
+
+  '@types/passport-naver@1.0.4':
+    resolution: {integrity: sha512-QcqccZxXUjSIkF/AdGsgWXS2jOfDuhs4ClmWht3PnFoujxoMkET3eR9KbXL8gdyOAELg1yKu8LhMnMwAbza1cw==}
 
   '@types/passport@1.0.16':
     resolution: {integrity: sha512-FD0qD5hbPWQzaM0wHUnJ/T0BBCJBxCeemtnCwc/ThhTg3x9jfrAcRUmj5Dopza+MfFS9acTe3wk7rcVnRIp/0A==}
@@ -2662,8 +2671,19 @@ packages:
   passport-kakao@1.0.1:
     resolution: {integrity: sha512-uItaYRVrTHL6iGPMnMZvPa/O1GrAdh/V6EMjOHcFlQcVroZ9wgG7BZ5PonMNJCxfHQ3L2QVNRnzhKWUzSsumbw==}
 
+  passport-naver@1.0.6:
+    resolution: {integrity: sha512-5XEbJesiPVshwE0cTDvbbJrOiYSJ9VFRJTctqiZL1Xip6qOi9n7d49UesOqavLT+Ry8C7aw3zdzbmWosqHcQ/Q==}
+
+  passport-oauth1@1.3.0:
+    resolution: {integrity: sha512-8T/nX4gwKTw0PjxP1xfD0QhrydQNakzeOpZ6M5Uqdgz9/a/Ag62RmJxnZQ4LkbdXGrRehQHIAHNAu11rCP46Sw==}
+    engines: {node: '>= 0.4.0'}
+
   passport-oauth2@1.1.2:
     resolution: {integrity: sha512-wpsGtJDHHQUjyc9WcV9FFB0bphFExpmKtzkQrxpH1vnSr6RcWa3ZEGHx/zGKAh2PN7Po9TKYB1fJeOiIBspNPA==}
+    engines: {node: '>= 0.4.0'}
+
+  passport-oauth@1.0.0:
+    resolution: {integrity: sha512-4IZNVsZbN1dkBzmEbBqUxDG8oFOIK81jqdksE3HEb/vI3ib3FMjbiZZ6MTtooyYZzmKu0BfovjvT1pdGgIq+4Q==}
     engines: {node: '>= 0.4.0'}
 
   passport-strategy@1.0.0:
@@ -3385,6 +3405,9 @@ packages:
   uid@2.0.2:
     resolution: {integrity: sha512-u3xV3X7uzvi5b1MncmZo3i2Aw222Zk1keqLA1YkHldREkAhAqi65wuPfe7lHx8H/Wzy+8CE7S7uS3jekIM5s8g==}
     engines: {node: '>=8'}
+
+  underscore@1.13.7:
+    resolution: {integrity: sha512-GMXzWtsc57XAtguZgaQViUOzs0KTkk8ojr3/xAxXLITqf/3EMwxC0inyETfDFjH/Krbhuep0HNbbjI9i/q3F3g==}
 
   undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
@@ -4454,6 +4477,11 @@ snapshots:
       '@types/node': 20.12.12
 
   '@types/passport-kakao@1.0.3':
+    dependencies:
+      '@types/express': 4.17.21
+      '@types/passport': 1.0.16
+
+  '@types/passport-naver@1.0.4':
     dependencies:
       '@types/express': 4.17.21
       '@types/passport': 1.0.16
@@ -6561,11 +6589,27 @@ snapshots:
       passport-oauth2: 1.1.2
       pkginfo: 0.3.1
 
+  passport-naver@1.0.6:
+    dependencies:
+      passport-oauth: 1.0.0
+      underscore: 1.13.7
+
+  passport-oauth1@1.3.0:
+    dependencies:
+      oauth: 0.9.15
+      passport-strategy: 1.0.0
+      utils-merge: 1.0.1
+
   passport-oauth2@1.1.2:
     dependencies:
       oauth: 0.9.15
       passport-strategy: 1.0.0
       uid2: 0.0.4
+
+  passport-oauth@1.0.0:
+    dependencies:
+      passport-oauth1: 1.3.0
+      passport-oauth2: 1.1.2
 
   passport-strategy@1.0.0: {}
 
@@ -7230,6 +7274,8 @@ snapshots:
   uid@2.0.2:
     dependencies:
       '@lukeed/csprng': 1.1.0
+
+  underscore@1.13.7: {}
 
   undici-types@5.26.5: {}
 

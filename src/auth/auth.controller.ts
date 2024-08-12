@@ -48,6 +48,16 @@ export class AuthController {
     return req.user;
   }
 
+  @Get('login/kakao')
+  @UseGuards(AuthGuard('kakao'))
+  @HttpCode(301)
+  async postLoginKakao(
+    @Req() req: Request & { user: { nickname: string; email: string } },
+  ) {
+    const user = await this.authService.kakaoLogin(req);
+    return user;
+  }
+
   /**
    * 이메일과 비밀번호, 닉네임을 받아 회원가입을 진행합니다. \
    * 길이 제한은 RegisterUserDTO 스키마를 참고해주세요
@@ -104,14 +114,5 @@ export class AuthController {
   @ApiCookieAuth()
   postLogout(@Req() req: Request) {
     return this.authService.clearAllCookies(req);
-  }
-
-  @Get('login/kakao')
-  @UseGuards(AuthGuard('kakao'))
-  @HttpCode(301)
-  async kakaoLogin(
-    @Req() req: Request & { user: { nickname: string; email: string } },
-  ) {
-    return this.authService.kakaoLogin(req);
   }
 }

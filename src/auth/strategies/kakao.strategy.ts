@@ -12,8 +12,8 @@ export class KakaoStrategy extends PassportStrategy(Strategy) {
       clientSecret: configService.get<string>(ENV.KAKAO_CLIENT_SECRET_KEY),
       callbackURL:
         process.env.NODE_ENV === 'development'
-          ? 'http://localhost:3002/api/auth/callback/kakao'
-          : 'https://apuu.us/api/auth/callback/kakao',
+          ? 'http://localhost:3002/api/auth/login/kakao'
+          : 'https://apuu.us/api/auth/login/kakao',
     });
   }
 
@@ -25,11 +25,10 @@ export class KakaoStrategy extends PassportStrategy(Strategy) {
     done: (error: any, user?: any, info?: any) => void,
   ) {
     try {
-      const { _json } = profile;
+      const { _json, username } = profile;
       const user = {
-        kakaoId: _json.id,
-        email: _json.account_email,
-        nickname: _json.profile_nickname,
+        nickname: username,
+        email: _json.kakao_account.email,
       };
       done(null, user);
     } catch (error) {
