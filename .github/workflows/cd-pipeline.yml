@@ -44,6 +44,8 @@ jobs:
           REDIS_PASS: ${{ secrets.REDIS_PASS }}
           KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
           KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
         run: >-
           sudo docker run -d
           -p $PORT:$PORT
@@ -64,6 +66,8 @@ jobs:
           -e REDIS_PASS="$REDIS_PASS"
           -e KAKAO_CLIENT_ID="$KAKAO_CLIENT_ID"
           -e KAKAO_CLIENT_SECRET="$KAKAO_CLIENT_SECRET"
+          -e NAVER_CLIENT_ID="$NAVER_CLIENT_ID"
+          -e NAVER_CLIENT_SECRET="$NAVER_CLIENT_SECRET"
           -v apuu-nest-public:/usr/src/app/public
           --name apuu-nest-container hyezoprk/apuu-nest
           --network server

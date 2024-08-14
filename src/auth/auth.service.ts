@@ -27,7 +27,11 @@ export type jwtPayload = {
   email: string;
   type: 'accessToken' | 'refreshToken' | 'XSRF-TOKEN';
 };
-
+export type OAuthUserType = {
+  email: string;
+  nickname: string;
+  provider: Providers;
+};
 type TokenType = 'Bearer' | 'Basic';
 
 @Injectable()
@@ -117,21 +121,33 @@ export class AuthService {
     });
   }
 
+  /**
+   * 브라우저에서는 쿠키 셋업, 모바일에서는 토큰 반환
+   */
   loginUser(req: Request, user: UsersModel) {
-    const tokens = {
-      accessToken: this.signToken(user, 'accessToken'),
-      refreshToken: this.signToken(user, 'refreshToken'),
-      xsrfToken: this.signToken(user, 'XSRF-TOKEN'),
-    };
+    if (!!req.headers.referer) {
+      const tokens = {
+        accessToken: this.signToken(user, 'accessToken'),
+        refreshToken: this.signToken(user, 'refreshToken'),
+        xsrfToken: this.signToken(user, 'XSRF-TOKEN'),
+      };
 
-    this.issueCookie(req, 'refreshToken', tokens.refreshToken);
-    this.issueCookie(req, 'accessToken', tokens.accessToken);
-    this.issueCookie(req, 'XSRF-TOKEN', tokens.xsrfToken, {
-      httpOnly: false,
-    });
-    this.issueCookie(req, 'isTokenAlive', true, {
-      httpOnly: false,
-    });
+      this.issueCookie(req, 'refreshToken', tokens.refreshToken);
+      this.issueCookie(req, 'accessToken', tokens.accessToken);
+      this.issueCookie(req, 'XSRF-TOKEN', tokens.xsrfToken, {
+        httpOnly: false,
+      });
+      this.issueCookie(req, 'isTokenAlive', true, {
+        httpOnly: false,
+      });
+
+      return;
+    } else {
+      return {
+        accessToken: this.signToken(user, 'accessToken'),
+        refreshToken: this.signToken(user, 'refreshToken'),
+      };
+    }
   }
 
   async authenticateWithEmailAndPassword({
@@ -157,9 +173,7 @@ export class AuthService {
       password,
     });
 
-    this.loginUser(req, existingUser);
-
-    return existingUser;
+    return this.loginUser(req, existingUser);
   }
 
   async registerWithEmail({ email, password, nickname }: RegisterUserDTO) {
@@ -287,29 +301,24 @@ export class AuthService {
     return { success: true, message: '로그아웃 성공' };
   }
 
-  async kakaoLogin(
-    req: Request & { user: { nickname: string; email: string } },
-  ) {
-    const user = await this.validateKakaoUser(req.user);
-    this.loginUser(req, user);
-    return user;
+  /**
+   * @returns 유저 데이터와 JWT
+   */
+  async oAuthLogin(req: Request & { user: OAuthUserType }) {
+    const user = await this.validateOAuthUser(req.user);
+    const tokens = this.loginUser(req, user);
+    return { user, tokens };
   }
 
-  async validateKakaoUser({
-    nickname,
-    email,
-  }: {
-    nickname: string;
-    email: string;
-  }) {
+  async validateOAuthUser({ email, nickname, provider }: OAuthUserType) {
     try {
       return await this.usersService.getUserByEmail(email);
     } catch (error) {
       return await this.usersService.createUser({
         email,
         nickname,
+        provider,
         password: null,
-        provider: Providers.KAKAO,
       });
     }
   }

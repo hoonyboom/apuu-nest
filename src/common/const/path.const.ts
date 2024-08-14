@@ -21,3 +21,8 @@ export const USER_PUBLIC_IMAGE_PATH = join(
   PUBLIC_FOLDER_NAME,
   USERS_FOLDER_NAME,
 );
+
+export const CLIENT_URL =
+  process.env.NODE_ENV === 'development'
+    ? 'http://localhost:3001/'
+    : 'https://apuu.us/';

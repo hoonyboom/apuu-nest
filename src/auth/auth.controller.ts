@@ -5,6 +5,7 @@ import {
   HttpCode,
   Post,
   Req,
+  Res,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -15,15 +16,16 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Request } from 'express';
+import { Request, Response } from 'express';
+import { CLIENT_URL } from 'src/common/const/path.const';
 import { UsersModel } from 'src/users/entity/users.entity';
-import { AuthService } from './auth.service';
+import { AuthService, OAuthUserType } from './auth.service';
 import { IsPublic } from './decorator/is-public.decorator';
 import { RegisterUserDTO } from './dto/register-user.dto';
 import { VerifyEmailCodeDTO } from './dto/verify-code.dto';
 import { SendVerificationCodeDTO } from './dto/verify-email.dto';
-import { RefreshTokenGuard } from './guard/base-token.guard';
 import { BasicTokenGuard } from './guard/basic-token.guard';
+import { RefreshTokenGuard } from './guard/bearer-token.guard';
 import { RegisterInterceptor } from './interceptor/register.interceptor';
 
 @ApiTags('Auth')
@@ -44,18 +46,40 @@ export class AuthController {
     description: '로그인 성공',
     type: RegisterUserDTO,
   })
-  async postLoginEmail(@Req() req: Request & { user: UsersModel }) {
-    return req.user;
+  async postLoginEmail(
+    @Req()
+    req: Request & {
+      user: UsersModel;
+      tokens?: { accessToken: string; refreshToken: string };
+    },
+  ) {
+    return { user: req.user, tokens: req.tokens };
   }
 
   @Get('login/kakao')
   @UseGuards(AuthGuard('kakao'))
   @HttpCode(301)
   async postLoginKakao(
-    @Req() req: Request & { user: { nickname: string; email: string } },
+    @Req() req: Request & { user: OAuthUserType },
+    @Res() res: Response,
   ) {
-    const user = await this.authService.kakaoLogin(req);
-    return user;
+    const { user } = await this.authService.oAuthLogin(req);
+    const encodeUser = encodeURIComponent(JSON.stringify(user));
+
+    return res.redirect(`${CLIENT_URL}/?user=${encodeUser}`);
+  }
+
+  @Get('login/naver')
+  @UseGuards(AuthGuard('naver'))
+  @HttpCode(301)
+  async postLoginNaver(
+    @Req() req: Request & { user: OAuthUserType },
+    @Res() res: Response,
+  ) {
+    const { user } = await this.authService.oAuthLogin(req);
+    const encodeUser = encodeURIComponent(JSON.stringify(user));
+
+    return res.redirect(`${CLIENT_URL}/?user=${encodeUser}`);
   }
 
   /**
