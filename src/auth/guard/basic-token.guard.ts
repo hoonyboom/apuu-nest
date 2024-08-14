@@ -15,6 +15,7 @@ export class BasicTokenGuard implements CanActivate {
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const req = ctx.switchToHttp().getRequest() satisfies Request & {
       user: UsersModel;
+      tokens?: { accessToken: string; refreshToken: string };
     };
 
     const rawToken = req.headers['authorization'];
@@ -26,12 +27,17 @@ export class BasicTokenGuard implements CanActivate {
     const token = this.authService.extractTokenFromHeader(rawToken);
     const { email, password } = this.authService.decodeBasicToken(token);
 
-    const user = await this.authService.loginWithEmail(req, {
+    const user = await this.authService.authenticateWithEmailAndPassword({
       email,
       password,
     });
 
+    const tokens = this.authService.loginUser(req, user);
+
     req.user = user;
+    if (tokens) {
+      req.tokens = tokens;
+    }
 
     return true;
   }

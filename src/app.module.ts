@@ -9,7 +9,7 @@ import { ENV } from 'src/common/const/env.const';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { AccessTokenGuard } from './auth/guard/base-token.guard';
+import { AccessTokenGuard } from './auth/guard/bearer-token.guard';
 import { RolesGuard } from './auth/guard/roles.guard';
 import { ChatsModule } from './chats/chats.module';
 import { ChatsModel } from './chats/entity/chats.entity';
