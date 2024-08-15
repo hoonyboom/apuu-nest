@@ -10,7 +10,7 @@ export abstract class BasePaginateDTO {
   where__id__less_than?: number;
 
   @IsIn(['ASC', 'DESC'])
-  order__createdAt: 'ASC' | 'DESC' = 'ASC';
+  order__createdAt: 'ASC' | 'DESC' = 'DESC';
 
   @IsNumber()
   take: number = 20;
